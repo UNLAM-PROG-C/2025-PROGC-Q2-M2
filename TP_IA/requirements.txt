@@ -1,0 +1,5 @@
+numpy>=1.21
+opencv-python>=4.5
+psutil>=5.9
+matplotlib>=3.5
+pytest>=7.0

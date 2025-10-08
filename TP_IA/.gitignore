@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.so
+*.dylib
+*.dll
+*.egg-info/
+.env/
+.venv/
+venv/
+.envrc
+.env.local
+output/
+bench/results.csv
+bench/plots/
+.DS_Store
+env
