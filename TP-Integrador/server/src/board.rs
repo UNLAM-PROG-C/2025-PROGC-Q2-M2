@@ -254,7 +254,7 @@ impl Board {
             self.boat_idx += 1;
         } else {
             //The boat is placed diagonally not valid
-            eprintln!("Tried to palce a boat diagonally");
+            eprintln!("Tried to place a boat diagonally");
         }
     }
 
