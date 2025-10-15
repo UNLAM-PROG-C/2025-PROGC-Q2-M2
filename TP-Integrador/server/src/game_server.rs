@@ -45,7 +45,7 @@ struct ClientMessage {
 
 impl GameServer {
     pub fn handle_connection(&self, mut connection: TcpStream, player: Player) {
-        let mut buf = [0; 5];
+        let mut buf = [0; size_of::<ClientMessage>()];
         loop {
             match connection.read_exact(&mut buf) {
                 Ok(()) => {
