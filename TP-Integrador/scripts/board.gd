@@ -12,7 +12,7 @@ var button_grid_player_1 := []
 # This will be the grid for the oponent
 var button_grid_player_2 := []
 var pre_start_mode := true
-var current_ship_size := 3
+var current_ship_size := 0
 var current_orientation := "horizontal" 
 var highlighted_cells := []
 var last_hover_start := Vector2i(-1, -1)
@@ -21,10 +21,8 @@ var last_hover_end := Vector2i(-1, -1)
 func _input(event):
 	if event.is_action_released("rotate"):
 		if current_orientation == "horizontal":
-			print("here")
 			current_orientation = "vertical"
 		else:
-			print("there")
 			current_orientation = "horizontal"
 		_on_cell_hover_enter(last_hover_start.x, last_hover_start.y)
 

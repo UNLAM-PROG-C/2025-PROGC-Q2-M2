@@ -1,7 +1,6 @@
 extends Node
 
-# 500 ms
-
+# 50 ms
 const POLL_INTERVAL := 0.05
 var poll_timer := 0.0
 
