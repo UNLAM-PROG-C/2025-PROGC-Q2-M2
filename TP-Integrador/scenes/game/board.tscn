@@ -1,0 +1,31 @@
+[gd_scene load_steps=3 format=3 uid="uid://bk11sf0nj8sgg"]
+
+[ext_resource type="Script" uid="uid://c5a2bjris1o38" path="res://scripts/connection_manager.gd" id="1_okguv"]
+[ext_resource type="Script" uid="uid://na6xxkfa0qcf" path="res://scripts/board.gd" id="2_3eqlr"]
+
+[node name="Board" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_okguv")
+
+[node name="HFlowContainer" type="HSplitContainer" parent="."]
+layout_mode = 0
+offset_right = 29.0
+offset_bottom = 14.0
+scale = Vector2(0.95572484, 0.8816172)
+dragging_enabled = false
+script = ExtResource("2_3eqlr")
+
+[node name="VFlowContainer" type="VFlowContainer" parent="HFlowContainer"]
+layout_mode = 2
+
+[node name="Player1Board" type="GridContainer" parent="HFlowContainer/VFlowContainer"]
+layout_mode = 2
+columns = 10
+
+[node name="VFlowContainer2" type="VFlowContainer" parent="HFlowContainer"]
+layout_mode = 2
+
+[node name="Player2Board" type="GridContainer" parent="HFlowContainer/VFlowContainer2"]
+layout_mode = 2
+columns = 10
