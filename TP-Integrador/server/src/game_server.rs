@@ -1,4 +1,4 @@
-use crate::board::Board;
+use crate::board::{Board, BoatLength};
 use std::{
     io::{Read, Write},
     net::TcpStream,
@@ -8,8 +8,10 @@ use std::{
     },
 };
 
-#[derive(Default)]
+const BOARD_SIZE: u8 = 10;
+const CLIENT_MESSAGE_SIZE: usize = 5;
 
+#[derive(Default)]
 pub struct GameServer {
     player_a: RwLock<Board>,
     player_b: RwLock<Board>,
@@ -24,8 +26,7 @@ pub enum Player {
     B,
 }
 
-#[expect(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 #[repr(u8)]
 enum MessageType {
     GetState = 0_u8,
@@ -33,8 +34,18 @@ enum MessageType {
     PlaceBoat,
 }
 
-#[derive(Debug)]
-#[repr(C)]
+impl MessageType {
+    fn from_byte(byte: u8) -> Option<Self> {
+        match byte {
+            0 => Some(Self::GetState),
+            1 => Some(Self::Hit),
+            2 => Some(Self::PlaceBoat),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
 struct ClientMessage {
     message_type: MessageType,
     x1: u8,
@@ -43,13 +54,46 @@ struct ClientMessage {
     y2: u8,
 }
 
+#[derive(Debug)]
+enum ClientMessageParseError {
+    UnknownMessageType(u8),
+}
+
+impl ClientMessage {
+    fn from_bytes(bytes: [u8; CLIENT_MESSAGE_SIZE]) -> Result<Self, ClientMessageParseError> {
+        let Some(message_type) = MessageType::from_byte(bytes[0]) else {
+            return Err(ClientMessageParseError::UnknownMessageType(bytes[0]));
+        };
+
+        Ok(Self {
+            message_type,
+            x1: bytes[1],
+            y1: bytes[2],
+            x2: bytes[3],
+            y2: bytes[4],
+        })
+    }
+}
+
 impl GameServer {
     pub fn handle_connection(&self, mut connection: TcpStream, player: Player) {
-        let mut buf = [0; size_of::<ClientMessage>()];
+        let mut buf = [0_u8; CLIENT_MESSAGE_SIZE];
         loop {
             match connection.read_exact(&mut buf) {
                 Ok(()) => {
-                    let message: ClientMessage = unsafe { std::mem::transmute(buf) };
+                    let message = match ClientMessage::from_bytes(buf) {
+                        Ok(message) => message,
+                        Err(ClientMessageParseError::UnknownMessageType(byte)) => {
+                            eprintln!("Received message with unknown type: {byte}");
+                            continue;
+                        }
+                    };
+
+                    if let Err(err) = Self::validate_message(&message) {
+                        eprintln!("{err}");
+                        continue;
+                    }
+
                     let should_continue =
                         self.handle_client_message(&mut connection, message, &player);
                     if !should_continue {
@@ -62,6 +106,54 @@ impl GameServer {
                 }
             }
         }
+    }
+
+    fn validate_message(message: &ClientMessage) -> Result<(), String> {
+        match message.message_type {
+            MessageType::GetState => Ok(()),
+            MessageType::Hit => {
+                if !Self::is_valid_cell(message.x1, message.y1) {
+                    return Err(format!(
+                        "Received hit message with out-of-bounds coordinates ({}, {})",
+                        message.x1, message.y1
+                    ));
+                }
+                Ok(())
+            }
+            MessageType::PlaceBoat => {
+                if !Self::is_valid_cell(message.x1, message.y1)
+                    || !Self::is_valid_cell(message.x2, message.y2)
+                {
+                    return Err(format!(
+                        "Received boat placement with out-of-bounds coordinates ({}, {}) -> ({}, {})",
+                        message.x1, message.y1, message.x2, message.y2
+                    ));
+                }
+
+                if message.x1 != message.x2 && message.y1 != message.y2 {
+                    return Err("Received boat placement that is neither horizontal nor vertical"
+                        .to_string());
+                }
+
+                let length = if message.x1 == message.x2 {
+                    message.y1.abs_diff(message.y2) + 1
+                } else {
+                    message.x1.abs_diff(message.x2) + 1
+                };
+
+                if BoatLength::from_length(length).is_none() {
+                    return Err(format!(
+                        "Received boat placement with invalid length {length}"
+                    ));
+                }
+
+                Ok(())
+            }
+        }
+    }
+
+    fn is_valid_cell(x: u8, y: u8) -> bool {
+        x < BOARD_SIZE && y < BOARD_SIZE
     }
 
     fn handle_client_message(

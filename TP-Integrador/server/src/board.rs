@@ -27,6 +27,18 @@ pub enum BoatLength {
     Two = 2,
 }
 
+impl BoatLength {
+    pub fn from_length(length: u8) -> Option<Self> {
+        match length {
+            5 => Some(Self::Five),
+            4 => Some(Self::Four),
+            3 => Some(Self::Three),
+            2 => Some(Self::Two),
+            _ => None,
+        }
+    }
+}
+
 impl Default for Board {
     fn default() -> Self {
         Self {
@@ -71,8 +83,13 @@ impl Board {
         self.hit_count == 19
     }
 
-    // TODO: DRY
     pub fn place_boat(&mut self, x1: u8, y1: u8, x2: u8, y2: u8) {
+        if x1 >= 10 || x2 >= 10 || y1 >= 10 || y2 >= 10 {
+            eprintln!("The player tried to place a boat outside the board bounds");
+            return;
+        }
+
+        // TODO: DRY
         // The boat is placed horizontally
         let Some(expected_boat_length) = self.boats_to_place.get(self.boat_idx) else {
             eprintln!("The player tried to place when there are no more boats to place");
@@ -80,7 +97,10 @@ impl Board {
         };
         if x1 == x2 {
             // The length will be determined by the diff in Y values
-            let boat_length: BoatLength = unsafe { std::mem::transmute(y1.abs_diff(y2) + 1) };
+            let Some(boat_length) = BoatLength::from_length(y1.abs_diff(y2) + 1) else {
+                eprintln!("The player tried to place a boat with an invalid length");
+                return;
+            };
             if boat_length != *expected_boat_length {
                 eprintln!("The player tried to place a boat with an unexpected length");
                 return;
@@ -168,7 +188,10 @@ impl Board {
         } else if y1 == y2 {
             // The boat is placed vertically
             // The length will be determined by the diff in X values
-            let boat_length: BoatLength = unsafe { std::mem::transmute(x1.abs_diff(x2) + 1) };
+            let Some(boat_length) = BoatLength::from_length(x1.abs_diff(x2) + 1) else {
+                eprintln!("The player tried to place a boat with an invalid length");
+                return;
+            };
             if boat_length != *expected_boat_length {
                 eprintln!("The player tried to place a boat with an unexpected length");
                 return;
