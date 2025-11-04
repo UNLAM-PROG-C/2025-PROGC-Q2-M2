@@ -57,50 +57,14 @@ func _on_state_update(payload: PackedByteArray) -> void:
 	for i in range(100):
 		var row: int = i / 10
 		var col: int = i % 10
-		var button: Button = game_board.button_grid_player_1[row][col]
-		match payload[i + 2]:
-			0:
-				if button not in game_board.highlighted_cells:
-					var style := StyleBoxFlat.new()
-					style.bg_color = Color(0.0, 0.624, 0.953, 1.0)
-					button.add_theme_stylebox_override("disabled", style)
-					button.add_theme_stylebox_override("normal", style)
-			1:
-				button.disabled = true
-				var style := StyleBoxFlat.new()
-				style.bg_color = Color(0.992, 0.0, 0.836, 1.0)
-				button.add_theme_stylebox_override("disabled", style)
-			2:
-				var style := StyleBoxFlat.new()
-				style.bg_color = Color(1.0, 0.0, 0.141, 1.0)
-				button.add_theme_stylebox_override("disabled", style)
-			3:
-				var style := StyleBoxFlat.new()
-				style.bg_color = Color(0.672, 0.496, 0.337, 1.0)
-				button.add_theme_stylebox_override("disabled", style)
+		game_board.update_player_cell_from_value(row, col, payload[i + 2])
 
 	for i in range(100):
 		var row: int = i / 10
 		var col: int = i % 10
-		var button: Button = game_board.button_grid_player_2[row][col]
-		match payload[i + 102]:
-			0:
-				var style := StyleBoxFlat.new()
-				style.bg_color = Color(0.0, 0.624, 0.953, 1.0)
-				button.add_theme_stylebox_override("disabled", style)
-				button.add_theme_stylebox_override("normal", style)
-			1:
-				pass
-			2:
-				button.disabled = true
-				var style := StyleBoxFlat.new()
-				style.bg_color = Color(0.144, 0.713, 0.0, 1.0)
-				button.add_theme_stylebox_override("disabled", style)
-			3:
-				button.disabled = true
-				var style := StyleBoxFlat.new()
-				style.bg_color = Color(1.0, 0.323, 0.207, 1.0)
-				button.add_theme_stylebox_override("disabled", style)
+		var cell_value := payload[i + 102]
+		var disable_target := cell_value == 2 or cell_value == 3
+		game_board.update_opponent_cell_from_value(row, col, cell_value, disable_target)
 
 func _handle_disconnection():
 	ConnectionState.tcp = null

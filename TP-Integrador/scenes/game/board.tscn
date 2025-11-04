@@ -1,31 +1,98 @@
-[gd_scene load_steps=3 format=3 uid="uid://bk11sf0nj8sgg"]
+[gd_scene load_steps=5 format=3 uid="uid://bk11sf0nj8sgg"]
 
 [ext_resource type="Script" uid="uid://c5a2bjris1o38" path="res://scripts/connection_manager.gd" id="1_okguv"]
 [ext_resource type="Script" uid="uid://na6xxkfa0qcf" path="res://scripts/board.gd" id="2_3eqlr"]
+[ext_resource type="Texture2D" uid="uid://0rhnr022y0wb" path="res://assets/background.png" id="3_j15tx"]
+
+[sub_resource type="StyleBoxFlat" id="1"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
 [node name="Board" type="Control"]
+custom_minimum_size = Vector2(1280, 1024)
 layout_mode = 3
 anchors_preset = 0
+mouse_filter = 1
 script = ExtResource("1_okguv")
 
-[node name="HFlowContainer" type="HSplitContainer" parent="."]
-layout_mode = 0
-offset_right = 29.0
-offset_bottom = 14.0
-scale = Vector2(0.95572484, 0.8816172)
-dragging_enabled = false
+[node name="Background" type="TextureRect" parent="."]
+texture_repeat = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_j15tx")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="HFlowContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 116.0
+offset_bottom = -151.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 32
+alignment = 1
 script = ExtResource("2_3eqlr")
 
-[node name="VFlowContainer" type="VFlowContainer" parent="HFlowContainer"]
+[node name="Player1Panel" type="Panel" parent="HFlowContainer"]
+custom_minimum_size = Vector2(608, 608)
 layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("1")
 
-[node name="Player1Board" type="GridContainer" parent="HFlowContainer/VFlowContainer"]
-layout_mode = 2
+[node name="Player1Board" type="GridContainer" parent="HFlowContainer/Player1Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
 columns = 10
 
-[node name="VFlowContainer2" type="VFlowContainer" parent="HFlowContainer"]
+[node name="Player2Panel" type="Panel" parent="HFlowContainer"]
+custom_minimum_size = Vector2(608, 608)
 layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("1")
 
-[node name="Player2Board" type="GridContainer" parent="HFlowContainer/VFlowContainer2"]
-layout_mode = 2
+[node name="Player2Board" type="GridContainer" parent="HFlowContainer/Player2Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
 columns = 10
