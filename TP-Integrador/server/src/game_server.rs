@@ -18,6 +18,8 @@ pub struct GameServer {
     turn_player_a: AtomicBool,
     all_boats_placed_player_a: AtomicBool,
     all_boats_placed_player_b: AtomicBool,
+    player_a_forfeited: AtomicBool,
+    player_b_forfeited: AtomicBool,
 }
 
 #[derive(Debug)]
@@ -102,6 +104,7 @@ impl GameServer {
                 }
                 Err(e) => {
                     eprintln!("Failed to read from tcp stream {e}");
+                    self.handle_disconnect(&player);
                     break;
                 }
             }
@@ -131,8 +134,10 @@ impl GameServer {
                 }
 
                 if message.x1 != message.x2 && message.y1 != message.y2 {
-                    return Err("Received boat placement that is neither horizontal nor vertical"
-                        .to_string());
+                    return Err(
+                        "Received boat placement that is neither horizontal nor vertical"
+                            .to_string(),
+                    );
                 }
 
                 let length = if message.x1 == message.x2 {
@@ -197,9 +202,11 @@ impl GameServer {
             }
             MessageType::GetState => {
                 let (state, game_ended) = self.get_state(player);
-                connection
-                    .write_all(&state)
-                    .expect("Failed to write state to socket");
+                if let Err(e) = connection.write_all(&state) {
+                    eprintln!("Failed to write state to socket: {e}");
+                    self.handle_disconnect(player);
+                    return false;
+                }
                 if game_ended {
                     return false;
                 }
@@ -239,6 +246,17 @@ impl GameServer {
         true
     }
 
+    fn handle_disconnect(&self, player: &Player) {
+        match player {
+            Player::A => {
+                self.player_a_forfeited.store(true, Ordering::Release);
+            }
+            Player::B => {
+                self.player_b_forfeited.store(true, Ordering::Release);
+            }
+        }
+    }
+
     /// This function encodes the entire state of the game in a 202 byte array
     ///
     /// Byte 0: 0 if all the boats are placed for both players 1 if waiting for other player to finish placing boats
@@ -265,6 +283,9 @@ impl GameServer {
 
         let mut response = Vec::with_capacity(202);
 
+        let player_a_forfeited = self.player_a_forfeited.load(Ordering::Acquire);
+        let player_b_forfeited = self.player_b_forfeited.load(Ordering::Acquire);
+
         let player_a_lost = self.player_a.read().expect("Failed to read board").lost();
         let player_b_lost = self.player_b.read().expect("Failed to read board").lost();
         let placing_boats = !(self.all_boats_placed_player_a.load(Ordering::Relaxed)
@@ -272,6 +293,20 @@ impl GameServer {
 
         match player {
             Player::A => {
+                if player_a_forfeited {
+                    response.push(255_u8);
+                    response.push(self.turn_player_a.load(Ordering::Relaxed) as u8);
+                    response.extend(player_a_board);
+                    response.extend(player_b_board);
+                    return (response, true);
+                } else if player_b_forfeited {
+                    response.push(254_u8);
+                    response.push(self.turn_player_a.load(Ordering::Relaxed) as u8);
+                    response.extend(player_a_board);
+                    response.extend(player_b_board);
+                    return (response, true);
+                }
+
                 if let Some(next_boat_player_a) = self
                     .player_a
                     .read()
@@ -296,6 +331,20 @@ impl GameServer {
                 response.extend(player_b_board);
             }
             Player::B => {
+                if player_b_forfeited {
+                    response.push(255_u8);
+                    response.push((!self.turn_player_a.load(Ordering::Relaxed)) as u8);
+                    response.extend(player_b_board.clone());
+                    response.extend(player_a_board.clone());
+                    return (response, true);
+                } else if player_a_forfeited {
+                    response.push(254_u8);
+                    response.push((!self.turn_player_a.load(Ordering::Relaxed)) as u8);
+                    response.extend(player_b_board.clone());
+                    response.extend(player_a_board.clone());
+                    return (response, true);
+                }
+
                 if let Some(next_boat_player_b) = self
                     .player_b
                     .read()
