@@ -25,6 +25,58 @@ pub struct GameServer {
     player_b_connection: Mutex<Option<TcpStream>>,
 }
 
+pub struct PendingConnection {
+    stream: TcpStream,
+    prebuffer: Vec<u8>,
+}
+
+impl PendingConnection {
+    pub fn new(stream: TcpStream) -> Self {
+        Self {
+            stream,
+            prebuffer: Vec::new(),
+        }
+    }
+
+    pub fn refresh(&mut self) -> bool {
+        if let Err(err) = self.stream.set_nonblocking(true) {
+            eprintln!("Failed to set non-blocking mode when checking connection: {err}");
+            return false;
+        }
+
+        let mut temp = [0_u8; 512];
+        let alive = loop {
+            match self.stream.read(&mut temp) {
+                Ok(0) => break false,
+                Ok(n) => {
+                    self.prebuffer.extend_from_slice(&temp[..n]);
+                    continue;
+                }
+                Err(err)
+                    if err.kind() == io::ErrorKind::WouldBlock
+                        || err.kind() == io::ErrorKind::Interrupted =>
+                {
+                    break true;
+                }
+                Err(err) => {
+                    eprintln!("Failed to read from connection while waiting for opponent: {err}");
+                    break false;
+                }
+            }
+        };
+
+        if let Err(err) = self.stream.set_nonblocking(false) {
+            eprintln!("Failed to restore blocking mode when checking connection: {err}");
+        }
+
+        alive
+    }
+
+    pub fn into_parts(self) -> (TcpStream, Vec<u8>) {
+        (self.stream, self.prebuffer)
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub enum Player {
     A,
@@ -142,7 +194,12 @@ struct SendResult {
 }
 
 impl GameServer {
-    pub fn handle_connection(&self, mut connection: TcpStream, player: Player) {
+    pub fn handle_connection(
+        &self,
+        mut connection: TcpStream,
+        mut buffered: Vec<u8>,
+        player: Player,
+    ) {
         self.register_connection(player, &connection);
         if let Err(err) = self.send_state_update_to(player) {
             eprintln!("Failed to send initial state to {:?}: {err}", player);
@@ -150,14 +207,16 @@ impl GameServer {
 
         let mut header = [0_u8; CLIENT_HEADER_SIZE];
         loop {
-            match connection.read_exact(&mut header) {
+            match Self::read_exact_buffered(&mut buffered, &mut connection, &mut header) {
                 Ok(()) => {
                     let message_type = header[0];
                     let payload_len = u16::from_le_bytes([header[1], header[2]]) as usize;
 
                     let mut payload = vec![0_u8; payload_len];
                     if payload_len > 0 {
-                        if let Err(err) = connection.read_exact(&mut payload) {
+                        if let Err(err) =
+                            Self::read_exact_buffered(&mut buffered, &mut connection, &mut payload)
+                        {
                             eprintln!(
                                 "Failed to read payload from tcp stream for {:?}: {err}",
                                 player
@@ -200,6 +259,28 @@ impl GameServer {
         }
 
         self.unregister_connection(player);
+    }
+
+    fn read_buffer_bytes(buffer: &mut Vec<u8>, target: &mut [u8]) -> usize {
+        if buffer.is_empty() {
+            return 0;
+        }
+        let take = buffer.len().min(target.len());
+        target[..take].copy_from_slice(&buffer[..take]);
+        buffer.drain(..take);
+        take
+    }
+
+    fn read_exact_buffered(
+        buffer: &mut Vec<u8>,
+        stream: &mut TcpStream,
+        dst: &mut [u8],
+    ) -> io::Result<()> {
+        let copied = Self::read_buffer_bytes(buffer, dst);
+        if copied < dst.len() {
+            stream.read_exact(&mut dst[copied..])?;
+        }
+        Ok(())
     }
 
     fn validate_message(message: &ClientMessage) -> Result<(), String> {
