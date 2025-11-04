@@ -57,23 +57,21 @@ func _hit_boat(x: int, y: int):
 	if pre_start_mode:
 		return
 
-	var tcp := ConnectionState.tcp
-	# Byte 0 -> Message type: hit
-	# Byte 1 -> x position
-	# Byte 2 -> y position
-	# Byte 3 & 4 -> padding
-	tcp.put_data(PackedByteArray([1,x,y,0,0]))
+	var payload := PackedByteArray([x, y])
+	ConnectionState.send_message(ConnectionState.ClientMessageType.HIT, payload)
 
 
 func _on_cell_pressed(row: int, col: int):
 	print("Button at [%d %d] pressed!" % [row,col])
 	if last_hover_start.x == -1:
 		return
-	# Byte 0: Message type 2 == PlaceBoat
-	# Byte 1: Row
-	# Byte 2: Column
-	# Bytes 3 and 4 are padding
-	ConnectionState.tcp.put_data(PackedByteArray([2, last_hover_start.x, last_hover_start.y, last_hover_end.x,  last_hover_end.y]))
+	var payload := PackedByteArray([
+		last_hover_start.x,
+		last_hover_start.y,
+		last_hover_end.x,
+		last_hover_end.y,
+	])
+	ConnectionState.send_message(ConnectionState.ClientMessageType.PLACE_BOAT, payload)
 	
 
 func _on_cell_hover_enter(row: int, col: int):

@@ -38,6 +38,7 @@ func connect_to_host_and_check_success(ip: String, port: int) -> Error:
 	if err != OK:
 		return err
 	ConnectionState.tcp = tcp
+	ConnectionState.reset()
 	ConnectionState.status = ConnectionState.ConnectionStatus.CONNECTING
 	var attempts = 0
 	tcp.poll()
@@ -50,6 +51,8 @@ func connect_to_host_and_check_success(ip: String, port: int) -> Error:
 	match tcp.get_status():
 		StreamPeerTCP.STATUS_CONNECTED:
 			ConnectionState.status = ConnectionState.ConnectionStatus.CONNECTED
+			ConnectionState.send_message(ConnectionState.ClientMessageType.GET_STATE)
 			return OK
 		_:
+			ConnectionState.tcp = null
 			return ERR_CANT_CONNECT
