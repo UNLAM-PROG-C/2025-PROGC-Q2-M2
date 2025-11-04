@@ -23,10 +23,9 @@ ConnectionState="*res://network/connection.gd"
 
 window/size/viewport_width=1280
 window/size/viewport_height=1024
+window/stretch/mode="viewport"
 window/size/window_width=1280
 window/size/window_height=1024
-window/stretch/mode="viewport"
-window/stretch/aspect="keep"
 
 [input]
 

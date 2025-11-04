@@ -75,6 +75,10 @@ theme_override_constants/h_separation = 0
 theme_override_constants/v_separation = 0
 columns = 10
 
+[node name="Player1Overlay" type="Node2D" parent="HFlowContainer/Player1Panel"]
+position = Vector2(4, 4)
+z_index = 1
+
 [node name="Player2Panel" type="Panel" parent="HFlowContainer"]
 custom_minimum_size = Vector2(608, 608)
 layout_mode = 2
