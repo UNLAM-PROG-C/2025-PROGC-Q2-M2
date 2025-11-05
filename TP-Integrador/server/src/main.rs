@@ -2,6 +2,7 @@ use crate::game_server::{GameServer, PendingConnection, Player};
 use std::{net::TcpListener, sync::Arc};
 mod board;
 mod game_server;
+mod logger;
 
 fn take_next_connection(queue: &mut Vec<PendingConnection>) -> Option<PendingConnection> {
     while let Some(mut pending) = queue.pop() {
@@ -15,12 +16,15 @@ fn take_next_connection(queue: &mut Vec<PendingConnection>) -> Option<PendingCon
 }
 
 fn main() {
-    let tcp_server = TcpListener::bind("127.0.0.1:1234").unwrap();
-    println!("Accepting connections at 127.0.0.1:1234");
+    logger::init().expect("Failed to initialise logger");
+    let address = "127.0.0.1:1234";
+    let tcp_server = TcpListener::bind(address).unwrap();
+    logger::log(&format!("Accepting connections at {address}"));
     let mut player_queue: Vec<PendingConnection> = Vec::new();
     loop {
         match tcp_server.accept() {
-            Ok((stream, _addr)) => {
+            Ok((stream, addr)) => {
+                logger::log(&format!("Incoming connection from {addr}"));
                 player_queue.push(PendingConnection::new(stream));
                 if player_queue.len() >= 2 {
                     if let Some(player_a_pending) = take_next_connection(&mut player_queue) {

@@ -1,4 +1,4 @@
-use crate::board::{Board, BoatLength};
+use crate::{board::{Board, BoatLength}, logger};
 use std::{
     io::{self, Read, Write},
     net::TcpStream,
@@ -40,7 +40,9 @@ impl PendingConnection {
 
     pub fn refresh(&mut self) -> bool {
         if let Err(err) = self.stream.set_nonblocking(true) {
-            eprintln!("Failed to set non-blocking mode when checking connection: {err}");
+            logger::log(&format!(
+                "Failed to set non-blocking mode when checking connection: {err}"
+            ));
             return false;
         }
 
@@ -59,14 +61,18 @@ impl PendingConnection {
                     break true;
                 }
                 Err(err) => {
-                    eprintln!("Failed to read from connection while waiting for opponent: {err}");
+                    logger::log(&format!(
+                        "Failed to read from connection while waiting for opponent: {err}"
+                    ));
                     break false;
                 }
             }
         };
 
         if let Err(err) = self.stream.set_nonblocking(false) {
-            eprintln!("Failed to restore blocking mode when checking connection: {err}");
+            logger::log(&format!(
+                "Failed to restore blocking mode when checking connection: {err}"
+            ));
         }
 
         alive
@@ -202,7 +208,10 @@ impl GameServer {
     ) {
         self.register_connection(player, &connection);
         if let Err(err) = self.send_state_update_to(player) {
-            eprintln!("Failed to send initial state to {:?}: {err}", player);
+            logger::log(&format!(
+                "Failed to send initial state to {:?}: {err}",
+                player
+            ));
         }
 
         let mut header = [0_u8; CLIENT_HEADER_SIZE];
@@ -214,13 +223,15 @@ impl GameServer {
 
                     let mut payload = vec![0_u8; payload_len];
                     if payload_len > 0 {
-                        if let Err(err) =
-                            Self::read_exact_buffered(&mut buffered, &mut connection, &mut payload)
-                        {
-                            eprintln!(
+                        if let Err(err) = Self::read_exact_buffered(
+                            &mut buffered,
+                            &mut connection,
+                            &mut payload,
+                        ) {
+                            logger::log(&format!(
                                 "Failed to read payload from tcp stream for {:?}: {err}",
                                 player
-                            );
+                            ));
                             self.handle_disconnect(player);
                             break;
                         }
@@ -229,19 +240,19 @@ impl GameServer {
                     let message = match ClientMessage::from_parts(message_type, &payload) {
                         Ok(message) => message,
                         Err(ClientMessageParseError::UnknownMessageType(byte)) => {
-                            eprintln!("Received message with unknown type: {byte}");
+                            logger::log(&format!("Received message with unknown type: {byte}"));
                             continue;
                         }
                         Err(ClientMessageParseError::InvalidLength { expected, actual }) => {
-                            eprintln!(
+                            logger::log(&format!(
                                 "Received message with invalid length. Expected {expected} got {actual}"
-                            );
+                            ));
                             continue;
                         }
                     };
 
                     if let Err(err) = Self::validate_message(&message) {
-                        eprintln!("{err}");
+                        logger::log(&err);
                         continue;
                     }
 
@@ -251,7 +262,7 @@ impl GameServer {
                     }
                 }
                 Err(err) => {
-                    eprintln!("Failed to read from tcp stream: {err}");
+                    logger::log(&format!("Failed to read from tcp stream: {err}"));
                     self.handle_disconnect(player);
                     break;
                 }
@@ -338,6 +349,10 @@ impl GameServer {
 
         match message.message_type {
             ClientMessageType::PlaceBoat => {
+                logger::log(&format!(
+                    "Player {:?} -> PlaceBoat from ({}, {}) to ({}, {})",
+                    player, message.x1, message.y1, message.x2, message.y2
+                ));
                 match player {
                     Player::A => {
                         self.player_a
@@ -368,23 +383,33 @@ impl GameServer {
                 }
                 should_broadcast = true;
             }
-            ClientMessageType::GetState => match self.send_state_update_to(player) {
-                Ok(result) => {
-                    if result.game_ended {
+            ClientMessageType::GetState => {
+                logger::log(&format!("Player {:?} -> GetState", player));
+                match self.send_state_update_to(player) {
+                    Ok(result) => {
+                        if result.game_ended {
+                            return false;
+                        }
+                    }
+                    Err(err) => {
+                        logger::log(&format!(
+                            "Failed to send state update to {:?}: {err}",
+                            player
+                        ));
+                        self.handle_disconnect(player);
                         return false;
                     }
                 }
-                Err(err) => {
-                    eprintln!("Failed to send state update to {:?}: {err}", player);
-                    self.handle_disconnect(player);
-                    return false;
-                }
-            },
+            }
             ClientMessageType::Hit => {
+                logger::log(&format!(
+                    "Player {:?} -> Hit at ({}, {})",
+                    player, message.x1, message.y1
+                ));
                 if !self.all_boats_placed_player_a.load(Ordering::Relaxed)
                     && !self.all_boats_placed_player_b.load(Ordering::Relaxed)
                 {
-                    eprintln!("Tried to hit a boat while still placing boats");
+                    logger::log("Hit attempt received before all boats were placed");
                     return true;
                 }
 
@@ -436,7 +461,10 @@ impl GameServer {
                     game_ended |= result.game_ended;
                 }
                 Err(err) => {
-                    eprintln!("Failed to send state update to {:?}: {err}", player);
+                    logger::log(&format!(
+                        "Failed to send state update to {:?}: {err}",
+                        player
+                    ));
                     self.handle_disconnect(player);
                 }
             }
@@ -507,10 +535,10 @@ impl GameServer {
 
         let opponent = player.opponent();
         if let Err(err) = self.send_state_update_to(opponent) {
-            eprintln!(
+            logger::log(&format!(
                 "Failed to notify {:?} about opponent disconnect: {err}",
                 opponent
-            );
+            ));
             self.unregister_connection(opponent);
         }
     }
