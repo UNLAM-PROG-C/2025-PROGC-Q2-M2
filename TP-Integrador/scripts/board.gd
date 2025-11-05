@@ -309,18 +309,20 @@ func _show_preview_for_cells(cells: Array[Vector2i]) -> void:
 		min_row = min(min_row, coords.x)
 		min_col = min(min_col, coords.y)
 	var target_size: Vector2
-	if horizontal:
-		target_size = Vector2(cells.size() * CELL_PIXEL_SIZE, CELL_PIXEL_SIZE)
-	else:
-		target_size = Vector2(CELL_PIXEL_SIZE, cells.size() * CELL_PIXEL_SIZE)
 	var tex_size := texture.get_size()
+	target_size = Vector2(cells.size() * CELL_PIXEL_SIZE, CELL_PIXEL_SIZE)
+
+	preview_sprite.scale = Vector2(target_size.x / tex_size.x, target_size.y / tex_size.y)
+		
+
 	if horizontal:
-		preview_sprite.scale = Vector2(target_size.x / tex_size.x, target_size.y / tex_size.y)
 		preview_sprite.rotation = 0.0
 	else:
-		preview_sprite.scale = Vector2(target_size.x / tex_size.y, target_size.y / tex_size.x)
+		target_size = Vector2(target_size.y, target_size.x)
 		preview_sprite.rotation = -PI / 2.0
 	preview_sprite.position = Vector2(min_col, min_row) * CELL_PIXEL_SIZE + target_size / 2.0
+		
+	
 	preview_sprite.visible = true
 
 func rebuild_player_ships(payload: PackedByteArray) -> void:
@@ -452,18 +454,17 @@ func _spawn_ship_sprite(texture: Texture2D, length: int, start_row: int, start_c
 	sprite.texture = texture
 	sprite.centered = true
 	var target_size: Vector2
-	if horizontal:
-		target_size = Vector2(length * CELL_PIXEL_SIZE, CELL_PIXEL_SIZE)
-	else:
-		target_size = Vector2(CELL_PIXEL_SIZE, length * CELL_PIXEL_SIZE)
 	var tex_size := texture.get_size()
-	if horizontal:
-		sprite.scale = Vector2(target_size.x / tex_size.x, target_size.y / tex_size.y)
-	else:
-		sprite.scale = Vector2(target_size.x / tex_size.y, target_size.y / tex_size.x)
-		sprite.rotation = -PI / 2.0
+	target_size = Vector2(length * CELL_PIXEL_SIZE, CELL_PIXEL_SIZE)
+	sprite.scale = Vector2(target_size.x / tex_size.x, target_size.y / tex_size.y)
+
+
 	var top_left := Vector2(start_col, start_row) * CELL_PIXEL_SIZE
 	sprite.position = top_left + target_size / 2.0
+	if not horizontal:
+		target_size = Vector2(target_size.y, target_size.x)
+		sprite.position = top_left + target_size / 2.0
+		sprite.rotation = -PI / 2.0
 	sprite.z_index = 2
 	player_ships_overlay.add_child(sprite)
 

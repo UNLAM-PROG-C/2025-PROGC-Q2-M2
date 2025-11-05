@@ -69,6 +69,8 @@ offset_left = 4.0
 offset_top = 4.0
 offset_right = -4.0
 offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_constants/h_separation = 0
@@ -76,12 +78,12 @@ theme_override_constants/v_separation = 0
 columns = 10
 
 [node name="Player1Overlay" type="Node2D" parent="HFlowContainer/Player1Panel"]
-position = Vector2(4, 4)
 z_index = 1
+position = Vector2(4, 4)
 
 [node name="Player1Preview" type="Node2D" parent="HFlowContainer/Player1Panel"]
-position = Vector2(4, 4)
 z_index = 2
+position = Vector2(4, 4)
 
 [node name="Player2Panel" type="Panel" parent="HFlowContainer"]
 custom_minimum_size = Vector2(608, 608)
@@ -99,6 +101,8 @@ offset_left = 4.0
 offset_top = 4.0
 offset_right = -4.0
 offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_constants/h_separation = 0
@@ -113,12 +117,15 @@ offset_left = 32.0
 offset_top = 16.0
 offset_right = -32.0
 offset_bottom = 132.0
+grow_horizontal = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="StatusPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 16
@@ -138,7 +145,6 @@ horizontal_alignment = 1
 [node name="TurnLabel" type="Label" parent="StatusPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = ""
 horizontal_alignment = 1
 
 [node name="PlacementContainer" type="HBoxContainer" parent="StatusPanel/MarginContainer/VBoxContainer"]
