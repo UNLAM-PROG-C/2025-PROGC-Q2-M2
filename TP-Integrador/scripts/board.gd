@@ -91,6 +91,7 @@ var player_explosions := {}
 var opponent_explosions := {}
 var opponent_destroyed_ships := {}
 var opponent_revealed_counts := {2: 0, 3: 0, 4: 0, 5: 0}
+var player_ship_layout: Array = []
 
 func _input(event):
 	if event.is_action_released("rotate"):
@@ -169,6 +170,7 @@ func _on_cell_pressed(row: int, col: int):
 		last_hover_end.y,
 	])
 	ConnectionState.send_message(ConnectionState.ClientMessageType.PLACE_BOAT, payload)
+	_remember_player_ship(last_hover_start, last_hover_end)
 	clear_highlight()
 	
 
@@ -235,7 +237,7 @@ func clear_highlight():
 func switch_to_start():
 	if not pre_start_mode:
 		return
-	_clear_all_explosions()
+	_clear_all_explosions(false)
 	switch_to_waiting_for_other_player()
 	for row in button_grid_player_2:
 		for button in row:
@@ -366,17 +368,44 @@ func rebuild_player_ships(payload: PackedByteArray) -> void:
 	for child in player_ships_overlay.get_children():
 		child.queue_free()
 
+	var any_ship := false
+	for value in payload.slice(2, 2 + GRID_SIZE * GRID_SIZE):
+		if _is_ship_value(value):
+			any_ship = true
+			break
+	if not any_ship:
+		player_ship_layout.clear()
+
 	var visited := []
 	for _row in range(GRID_SIZE):
-		var row_flags := []
+		var row_flags: Array[bool] = []
 		for _col in range(GRID_SIZE):
 			row_flags.append(false)
 		visited.append(row_flags)
 
 	var ships_found: Array = []
+	var valid_layout: Array = []
+
+	for ship_data in player_ship_layout:
+		var stored_ship: Dictionary = ship_data
+		if _ship_layout_matches_board(payload, stored_ship):
+			var cells: Array[Vector2i] = _get_ship_cells(stored_ship)
+			_mark_cells_visited(visited, cells)
+			var ship_dict := {
+				"length": int(stored_ship.get("length", 0)),
+				"horizontal": bool(stored_ship.get("horizontal", true)),
+				"start_row": stored_ship.get("start_row", 0),
+				"start_col": stored_ship.get("start_col", 0),
+				"used": false,
+			}
+			ships_found.append(ship_dict)
+			valid_layout.append(stored_ship)
+	player_ship_layout = valid_layout
+
 	for row in range(GRID_SIZE):
 		for col in range(GRID_SIZE):
-			if visited[row][col]:
+			var visited_row: Array[bool] = visited[row] as Array[bool]
+			if visited_row[col]:
 				continue
 			var value := _get_player_cell_value(payload, row, col)
 			if not _is_ship_value(value):
@@ -385,7 +414,14 @@ func rebuild_player_ships(payload: PackedByteArray) -> void:
 			var length: int = ship_info.get("length", 0)
 			if length < 2:
 				continue
+			ship_info["used"] = false
 			ships_found.append(ship_info)
+			_store_layout_entry(
+				ship_info.get("start_row", 0),
+				ship_info.get("start_col", 0),
+				length,
+				bool(ship_info.get("horizontal", true))
+			)
 
 	placed_ship_counts = {2: 0, 3: 0, 4: 0, 5: 0}
 	for ship_dict in ships_found:
@@ -420,6 +456,44 @@ func _get_player_cell_value(payload: PackedByteArray, row: int, col: int) -> int
 
 func _is_ship_value(value: int) -> bool:
 	return value == 1 or value == 2
+
+func _ship_layout_matches_board(payload: PackedByteArray, ship_data: Dictionary) -> bool:
+	var cells: Array[Vector2i] = _get_ship_cells(ship_data)
+	if cells.is_empty():
+		return false
+	for coord in cells:
+		var value := _get_player_cell_value(payload, coord.x, coord.y)
+		if not _is_ship_value(value):
+			return false
+	return true
+
+func _get_ship_cells(ship_data: Dictionary) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	var length: int = ship_data.get("length", 0)
+	if length <= 0:
+		return cells
+	var horizontal := bool(ship_data.get("horizontal", true))
+	var start_row: int = ship_data.get("start_row", 0)
+	var start_col: int = ship_data.get("start_col", 0)
+	for i in range(length):
+		var row: int
+		var col: int
+		if horizontal:
+			row = start_row
+			col = start_col + i
+		else:
+			row = start_row + i
+			col = start_col
+		if row < 0 or row >= GRID_SIZE or col < 0 or col >= GRID_SIZE:
+			continue
+		cells.append(Vector2i(row, col))
+	return cells
+
+func _mark_cells_visited(visited: Array, cells: Array[Vector2i]) -> void:
+	for coord in cells:
+		var visited_row: Array[bool] = visited[coord.x] as Array[bool]
+		if coord.y >= 0 and coord.y < visited_row.size():
+			visited_row[coord.y] = true
 
 func _collect_ship(payload: PackedByteArray, row: int, col: int, visited: Array) -> Dictionary:
 	visited[row][col] = true
@@ -483,6 +557,35 @@ func _find_unassigned_ship(ships: Array, length: int) -> int:
 		if int(ship.get("length", 0)) == length and ship.get("used", false) == false:
 			return i
 	return -1
+
+func _remember_player_ship(start: Vector2i, end: Vector2i) -> void:
+	if start.x < 0 or end.x < 0:
+		return
+	var horizontal := start.x == end.x
+	var length := 1
+	if horizontal:
+		length = abs(end.y - start.y) + 1
+	else:
+		length = abs(end.x - start.x) + 1
+	var start_row :int = min(start.x, end.x)
+	var start_col :int = min(start.y, end.y)
+	_store_layout_entry(start_row, start_col, length, horizontal)
+
+func _store_layout_entry(start_row: int, start_col: int, length: int, horizontal: bool) -> void:
+	if length < 2:
+		return
+	for existing in player_ship_layout:
+		if existing.get("start_row", -1) == start_row \
+				and existing.get("start_col", -1) == start_col \
+				and int(existing.get("length", 0)) == length \
+				and bool(existing.get("horizontal", false)) == horizontal:
+			return
+	player_ship_layout.append({
+		"start_row": start_row,
+		"start_col": start_col,
+		"length": length,
+		"horizontal": horizontal,
+	})
 
 func _spawn_ship_sprite(texture: Texture2D, length: int, start_row: int, start_col: int, horizontal: bool) -> void:
 	var sprite := _create_ship_sprite(texture, length, start_row, start_col, horizontal, 2)
@@ -869,11 +972,13 @@ func _cell_key(row: int, col: int) -> String:
 func _cell_center_position(row: int, col: int) -> Vector2:
 	return Vector2(col, row) * CELL_PIXEL_SIZE + Vector2(CELL_PIXEL_SIZE / 2.0, CELL_PIXEL_SIZE / 2.0)
 
-func _clear_all_explosions() -> void:
+func _clear_all_explosions(clear_player_layout: bool = true) -> void:
 	_clear_explosion_store(player_explosions)
 	_clear_explosion_store(opponent_explosions)
 	_clear_opponent_ships()
 	opponent_destroyed_ships.clear()
+	if clear_player_layout:
+		player_ship_layout.clear()
 
 func _clear_explosion_store(store: Dictionary) -> void:
 	for key in store.keys():
