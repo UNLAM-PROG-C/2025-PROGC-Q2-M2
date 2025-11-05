@@ -81,6 +81,10 @@ columns = 10
 z_index = 1
 position = Vector2(4, 4)
 
+[node name="Player1Effects" type="Node2D" parent="HFlowContainer/Player1Panel"]
+z_index = 4
+position = Vector2(4, 4)
+
 [node name="Player1Preview" type="Node2D" parent="HFlowContainer/Player1Panel"]
 z_index = 2
 position = Vector2(4, 4)
@@ -108,6 +112,14 @@ size_flags_vertical = 4
 theme_override_constants/h_separation = 0
 theme_override_constants/v_separation = 0
 columns = 10
+
+[node name="Player2Overlay" type="Node2D" parent="HFlowContainer/Player2Panel"]
+z_index = 2
+position = Vector2(4, 4)
+
+[node name="Player2Effects" type="Node2D" parent="HFlowContainer/Player2Panel"]
+z_index = 4
+position = Vector2(4, 4)
 
 [node name="StatusPanel" type="Panel" parent="."]
 layout_mode = 1

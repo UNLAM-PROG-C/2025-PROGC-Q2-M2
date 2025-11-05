@@ -59,6 +59,7 @@ func _on_state_update(payload: PackedByteArray) -> void:
 		var disable_target := cell_value == 2 or cell_value == 3
 		game_board.update_opponent_cell_from_value(row, col, cell_value, disable_target)
 
+	game_board.handle_state_payload(payload)
 	game_board.rebuild_player_ships(payload)
 	game_board.update_status(header, payload[1] == 1)
 

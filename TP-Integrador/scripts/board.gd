@@ -3,6 +3,9 @@ extends Node
 @onready var grid_player_1 = $Player1Panel/Player1Board
 @onready var grid_player_2 = $Player2Panel/Player2Board
 @onready var player_ships_overlay: Node2D = $Player1Panel/Player1Overlay
+@onready var player_effects_overlay: Node2D = $Player1Panel/Player1Effects
+@onready var opponent_ships_overlay: Node2D = $Player2Panel/Player2Overlay
+@onready var opponent_effects_overlay: Node2D = $Player2Panel/Player2Effects
 @onready var preview_overlay: Node2D = $Player1Panel/Player1Preview
 @onready var status_panel: Panel = get_parent().get_node("StatusPanel")
 @onready var phase_label: Label = status_panel.get_node("MarginContainer/VBoxContainer/PhaseLabel")
@@ -18,6 +21,15 @@ const TILE_RECTS := {
 	"miss": Rect2i(Vector2i(73, 525), Vector2i(428, 393)),
 	"hover": Rect2i(Vector2i(535, 525), Vector2i(415, 393)),
 }
+
+const HIT_ANIMATION_ATLAS := preload("res://assets/hit_animation.png")
+const HIT_ANIMATION_BOUNDS := [
+	Vector4i(84, 287, 134, 388),
+	Vector4i(330, 602, 109, 388),
+	Vector4i(642, 932, 91, 411),
+]
+const HIT_ANIMATION_PHASE_TIME := 0.2
+const HIT_ANIMATION_TILE_DELAY := 0.5
 
 const SHIP_ATLAS := preload("res://assets/ships_sheet.png")
 const SHIP_RECTS := {
@@ -35,7 +47,7 @@ const SHIP_ORDER_BY_LENGTH := {
 	2: ["destructor"],
 }
 
-const PLACEMENT_SEQUENCE := [5, 4, 3, 3, 2, 2]
+const PLACEMENT_SEQUENCE :Array[int]= [5, 4, 3, 3, 2, 2]
 const PLACEMENT_NAMES := [
 	"Portaaviones",
 	"Acorazado",
@@ -59,6 +71,8 @@ var button_grid_player_1 := []
 var button_grid_player_2 := []
 var player_cell_states := []
 var opponent_cell_states := []
+var player_raw_values := []
+var opponent_raw_values := []
 var pre_start_mode := true
 var current_ship_size := 0
 var current_orientation := "horizontal" 
@@ -72,6 +86,11 @@ var placement_icon_nodes: Array = []
 var placed_ship_counts := {2: 0, 3: 0, 4: 0, 5: 0}
 var placement_progress := 0
 var preview_sprite: Sprite2D
+var explosion_textures: Array[Texture2D] = []
+var player_explosions := {}
+var opponent_explosions := {}
+var opponent_destroyed_ships := {}
+var opponent_revealed_counts := {2: 0, 3: 0, 4: 0, 5: 0}
 
 func _input(event):
 	if event.is_action_released("rotate"):
@@ -84,11 +103,13 @@ func _input(event):
 func _ready() -> void:
 	_init_styles()
 	_init_ship_textures()
+	_init_explosion_textures()
 	_init_status_ui()
 	_update_placement_icons(0)
 	for row in range(GRID_SIZE):
 		var row_array := []
 		var state_row := []
+		var raw_row := []
 		for col in range(GRID_SIZE):
 			var btn = CellButton.instantiate()
 			btn.name = "Cell_%d_%d" % [row, col]
@@ -102,12 +123,15 @@ func _ready() -> void:
 			grid_player_1.add_child(btn)
 			row_array.append(btn)
 			state_row.append(CellVisualState.BASE)
+			raw_row.append(0)
 		button_grid_player_1.append(row_array)
 		player_cell_states.append(state_row)
+		player_raw_values.append(raw_row)
 	
 	for row in range(GRID_SIZE):
 		var row_array := []
 		var state_row := []
+		var raw_row := []
 		for col in range(GRID_SIZE):
 			var btn = CellButton.instantiate()
 			btn.name = "Cell_%d_%d" % [row, col]
@@ -120,8 +144,10 @@ func _ready() -> void:
 			grid_player_2.add_child(btn)
 			row_array.append(btn)
 			state_row.append(CellVisualState.BASE)
+			raw_row.append(0)
 		button_grid_player_2.append(row_array)
 		opponent_cell_states.append(state_row)
+		opponent_raw_values.append(raw_row)
 
 
 func _hit_boat(x: int, y: int):
@@ -209,12 +235,12 @@ func clear_highlight():
 func switch_to_start():
 	if not pre_start_mode:
 		return
-	else:
-		switch_to_waiting_for_other_player()
-		for row in button_grid_player_2:
-			for button in row:
-				button.disabled = false
-		_refresh_opponent_styles()
+	_clear_all_explosions()
+	switch_to_waiting_for_other_player()
+	for row in button_grid_player_2:
+		for button in row:
+			button.disabled = false
+	_refresh_opponent_styles()
 	pre_start_mode = false
 
 func switch_to_waiting_for_other_player():
@@ -224,7 +250,11 @@ func switch_to_waiting_for_other_player():
 			var button: Button = button_grid_player_1[row_idx][col_idx]
 			_apply_style(button, player_cell_states[row_idx][col_idx], true, true)
 
+func handle_state_payload(_payload: PackedByteArray) -> void:
+	_process_destroyed_opponent_ships()
+
 func update_player_cell_from_value(row: int, col: int, value: int) -> void:
+	player_raw_values[row][col] = value
 	match value:
 		2:
 			set_player_cell_state(row, col, CellVisualState.HIT, true)
@@ -240,6 +270,7 @@ func update_player_cell_from_value(row: int, col: int, value: int) -> void:
 			set_player_cell_state(row, col, CellVisualState.BASE, should_disable)
 
 func update_opponent_cell_from_value(row: int, col: int, value: int, disabled: bool) -> void:
+	opponent_raw_values[row][col] = value
 	match value:
 		2:
 			set_opponent_cell_state(row, col, CellVisualState.HIT, disabled)
@@ -255,6 +286,10 @@ func set_player_cell_state(row: int, col: int, state: int, disabled_override: Va
 	if disabled_override != null:
 		disabled_state = disabled_override
 	_apply_style(button, state, disabled_state, true)
+	if state == CellVisualState.HIT:
+		_trigger_player_explosion(row, col)
+	else:
+		_clear_cell_explosion(row, col, player_explosions)
 	if state == CellVisualState.BASE and not disabled_state and highlighted_cells.has(Vector2i(row, col)):
 		_apply_hover_override(button)
 
@@ -450,23 +485,30 @@ func _find_unassigned_ship(ships: Array, length: int) -> int:
 	return -1
 
 func _spawn_ship_sprite(texture: Texture2D, length: int, start_row: int, start_col: int, horizontal: bool) -> void:
+	var sprite := _create_ship_sprite(texture, length, start_row, start_col, horizontal, 2)
+	if sprite == null:
+		return
+	player_ships_overlay.add_child(sprite)
+
+func _create_ship_sprite(texture: Texture2D, length: int, start_row: int, start_col: int, horizontal: bool, z_value: int) -> Sprite2D:
+	if texture == null:
+		return null
+	var tex_size: Vector2 = texture.get_size()
+	if tex_size.x <= 0.0 or tex_size.y <= 0.0:
+		return null
 	var sprite := Sprite2D.new()
 	sprite.texture = texture
 	sprite.centered = true
-	var target_size: Vector2
-	var tex_size := texture.get_size()
-	target_size = Vector2(length * CELL_PIXEL_SIZE, CELL_PIXEL_SIZE)
+	var target_size := Vector2(length * CELL_PIXEL_SIZE, CELL_PIXEL_SIZE)
 	sprite.scale = Vector2(target_size.x / tex_size.x, target_size.y / tex_size.y)
-
-
 	var top_left := Vector2(start_col, start_row) * CELL_PIXEL_SIZE
 	sprite.position = top_left + target_size / 2.0
 	if not horizontal:
 		target_size = Vector2(target_size.y, target_size.x)
 		sprite.position = top_left + target_size / 2.0
 		sprite.rotation = -PI / 2.0
-	sprite.z_index = 2
-	player_ships_overlay.add_child(sprite)
+	sprite.z_index = z_value
+	return sprite
 
 func update_status(header: int, is_player_turn: bool) -> void:
 	var active_length: int = 0
@@ -554,6 +596,28 @@ func _create_ship_texture(region: Rect2i) -> AtlasTexture:
 	atlas.region = region
 	return atlas
 
+func _init_explosion_textures() -> void:
+	if not explosion_textures.is_empty():
+		return
+	for bounds in HIT_ANIMATION_BOUNDS:
+		var rect := _rect_from_bounds(bounds)
+		explosion_textures.append(_create_explosion_texture(rect))
+
+func _rect_from_bounds(bounds: Vector4i) -> Rect2i:
+	var min_x: int = bounds.x
+	var max_x: int = bounds.y
+	var min_y: int = bounds.z
+	var max_y: int = bounds.w
+	var width: int = int(max(1, max_x - min_x))
+	var height: int = int(max(1, max_y - min_y))
+	return Rect2i(Vector2i(min_x, min_y), Vector2i(width, height))
+
+func _create_explosion_texture(region: Rect2i) -> AtlasTexture:
+	var atlas := AtlasTexture.new()
+	atlas.atlas = HIT_ANIMATION_ATLAS
+	atlas.region = region
+	return atlas
+
 func _get_sequence_texture_for_index(index: int) -> Texture2D:
 	if index < 0 or index >= PLACEMENT_SEQUENCE.size():
 		return null
@@ -575,17 +639,27 @@ func _get_sequence_name(index: int) -> String:
 func _init_status_ui() -> void:
 	for child in placement_container.get_children():
 		child.queue_free()
+
 	placement_icon_nodes.clear()
+
 	for i in range(PLACEMENT_SEQUENCE.size()):
 		var texture := _get_sequence_texture_for_index(i)
 		var icon := TextureRect.new()
 		icon.texture = texture
+		icon.expand = true
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.custom_minimum_size = Vector2(96, 40)
 		icon.modulate = Color(1, 1, 1, 0.6)
 		icon.tooltip_text = _get_sequence_name(i)
+
+		var length := PLACEMENT_SEQUENCE[i]
+		var target_size := Vector2(length * CELL_PIXEL_SIZE, CELL_PIXEL_SIZE)
+		icon.custom_minimum_size = target_size
+
 		placement_container.add_child(icon)
+		icon.size = target_size
+
 		placement_icon_nodes.append(icon)
+
 
 func _update_placement_icons(active_length: int) -> void:
 	if placement_icon_nodes.is_empty():
@@ -598,6 +672,226 @@ func _update_placement_icons(active_length: int) -> void:
 			icon.modulate = Color(1, 1, 1, 1.0)
 		else:
 			icon.modulate = Color(1, 1, 1, 0.6)
+
+func _process_destroyed_opponent_ships() -> void:
+	if opponent_raw_values.is_empty():
+		return
+	var visited: Array = []
+	for _row in range(GRID_SIZE):
+		var visited_row: Array[bool] = []
+		for _col in range(GRID_SIZE):
+			visited_row.append(false)
+		visited.append(visited_row)
+
+	for row in range(GRID_SIZE):
+		for col in range(GRID_SIZE):
+			var visited_row: Array[bool] = visited[row] as Array[bool]
+			if visited_row[col]:
+				continue
+			var cell_value: int = opponent_raw_values[row][col]
+			if not _is_ship_value(cell_value):
+				continue
+			var ship_info: Dictionary = _collect_ship_from_raw(opponent_raw_values, visited, row, col)
+			if ship_info.is_empty():
+				continue
+			var coords: Array[Vector2i] = ship_info.get("coords", []) as Array[Vector2i]
+			if coords.is_empty():
+				continue
+			var all_hit := true
+			for coord in coords:
+				var pos: Vector2i = coord
+				if opponent_raw_values[pos.x][pos.y] != 2:
+					all_hit = false
+					break
+			if not all_hit:
+				continue
+			var ship_key := _ship_coords_key(coords)
+			if opponent_destroyed_ships.has(ship_key):
+				continue
+			var min_row: int = coords[0].x
+			var min_col: int = coords[0].y
+			for point in coords:
+				var coord_point: Vector2i = point
+				min_row = min(min_row, coord_point.x)
+				min_col = min(min_col, coord_point.y)
+			var length: int = coords.size()
+			var horizontal: bool = bool(ship_info.get("horizontal", true))
+			var ship_data := {
+				"length": length,
+				"horizontal": horizontal,
+				"start_row": min_row,
+				"start_col": min_col,
+			}
+			opponent_destroyed_ships[ship_key] = ship_data
+			_reveal_opponent_ship(ship_key, ship_data)
+			_handle_opponent_ship_destroyed(coords)
+
+func _collect_ship_from_raw(raw_values: Array, visited: Array, start_row: int, start_col: int) -> Dictionary:
+	var stack: Array[Vector2i] = [Vector2i(start_row, start_col)]
+	var coords: Array[Vector2i] = []
+	while not stack.is_empty():
+		var current: Vector2i = stack.pop_back()
+		var row: int = current.x
+		var col: int = current.y
+		if row < 0 or row >= GRID_SIZE or col < 0 or col >= GRID_SIZE:
+			continue
+		var visited_row: Array[bool] = visited[row] as Array[bool]
+		if visited_row[col]:
+			continue
+		visited_row[col] = true
+		var cell_value: int = raw_values[row][col]
+		if not _is_ship_value(cell_value):
+			continue
+		coords.append(Vector2i(row, col))
+		stack.append(Vector2i(row + 1, col))
+		stack.append(Vector2i(row - 1, col))
+		stack.append(Vector2i(row, col + 1))
+		stack.append(Vector2i(row, col - 1))
+
+	if coords.is_empty():
+		return {}
+
+	var horizontal := true
+	var base_row: int = coords[0].x
+	for coord in coords:
+		if coord.x != base_row:
+			horizontal = false
+			break
+
+	return {
+		"coords": coords,
+		"horizontal": horizontal,
+	}
+
+func _ship_coords_key(coords: Array) -> String:
+	var ordered := coords.duplicate()
+	ordered.sort_custom(Callable(self, "_compare_vector2i"))
+	var parts: Array[String] = []
+	for coord in ordered:
+		var pos: Vector2i = coord
+		parts.append("%d_%d" % [pos.x, pos.y])
+	return String(";").join(parts)
+
+func _reveal_opponent_ship(ship_key: String, ship_data: Dictionary) -> void:
+	if opponent_ships_overlay == null:
+		return
+	var length: int = ship_data.get("length", 0)
+	if length < 2:
+		return
+	var textures: Array = ship_textures_by_length.get(length, [])
+	if textures.is_empty():
+		return
+	var reveal_count: int = opponent_revealed_counts.get(length, 0)
+	var texture_index: int = min(reveal_count, textures.size() - 1)
+	var texture: Texture2D = textures[texture_index]
+	opponent_revealed_counts[length] = reveal_count + 1
+	var horizontal: bool = bool(ship_data.get("horizontal", true))
+	var start_row: int = ship_data.get("start_row", 0)
+	var start_col: int = ship_data.get("start_col", 0)
+	var sprite := _create_ship_sprite(texture, length, start_row, start_col, horizontal, 2)
+	if sprite == null:
+		return
+	opponent_ships_overlay.add_child(sprite)
+	ship_data["sprite"] = sprite
+	opponent_destroyed_ships[ship_key] = ship_data
+
+func _handle_opponent_ship_destroyed(coords: Array) -> void:
+	var ordered := coords.duplicate()
+	ordered.sort_custom(Callable(self, "_compare_vector2i"))
+	for i in range(ordered.size()):
+		var coord: Vector2i = ordered[i]
+		var delay := float(i) * HIT_ANIMATION_TILE_DELAY
+		_trigger_cell_explosion(coord.x, coord.y, opponent_effects_overlay, opponent_explosions, delay)
+
+func _trigger_player_explosion(row: int, col: int) -> void:
+	_trigger_cell_explosion(row, col, player_effects_overlay, player_explosions)
+
+func _trigger_cell_explosion(row: int, col: int, overlay: Node2D, store: Dictionary, start_delay: float = 0.0) -> void:
+	if overlay == null:
+		return
+	var key := _cell_key(row, col)
+	if store.has(key):
+		var existing: Sprite2D = store[key]
+		if is_instance_valid(existing):
+			return
+		else:
+			store.erase(key)
+	var sprite := Sprite2D.new()
+	sprite.centered = true
+	sprite.visible = false
+	sprite.z_index = 10
+	sprite.position = _cell_center_position(row, col)
+	overlay.add_child(sprite)
+	store[key] = sprite
+	_play_explosion(sprite, start_delay)
+
+func _play_explosion(sprite: Sprite2D, start_delay: float) -> void:
+	if explosion_textures.is_empty():
+		return
+	var tween := create_tween()
+	tween.tween_callback(Callable(self, "_set_explosion_frame").bind(sprite, 0)).set_delay(start_delay)
+	tween.tween_interval(HIT_ANIMATION_PHASE_TIME)
+	tween.tween_callback(Callable(self, "_set_explosion_frame").bind(sprite, 1))
+	tween.tween_interval(HIT_ANIMATION_PHASE_TIME)
+	tween.tween_callback(Callable(self, "_set_explosion_frame").bind(sprite, 2))
+
+func _set_explosion_frame(sprite: Sprite2D, frame_index: int) -> void:
+	if not is_instance_valid(sprite):
+		return
+	if explosion_textures.is_empty():
+		return
+	var idx: int = clamp(frame_index, 0, explosion_textures.size() - 1)
+	var texture: Texture2D = explosion_textures[idx]
+	sprite.texture = texture
+	sprite.scale = _get_texture_scale(texture)
+	sprite.visible = true
+
+func _get_texture_scale(texture: Texture2D) -> Vector2:
+	if texture == null:
+		return Vector2.ONE
+	var tex_size := texture.get_size()
+	if tex_size.x <= 0 or tex_size.y <= 0:
+		return Vector2.ONE
+	return Vector2(CELL_PIXEL_SIZE / tex_size.x, CELL_PIXEL_SIZE / tex_size.y)
+
+func _clear_cell_explosion(row: int, col: int, store: Dictionary) -> void:
+	var key := _cell_key(row, col)
+	if not store.has(key):
+		return
+	var sprite: Sprite2D = store[key]
+	if is_instance_valid(sprite):
+		sprite.queue_free()
+	store.erase(key)
+
+func _cell_key(row: int, col: int) -> String:
+	return "%d_%d" % [row, col]
+
+func _cell_center_position(row: int, col: int) -> Vector2:
+	return Vector2(col, row) * CELL_PIXEL_SIZE + Vector2(CELL_PIXEL_SIZE / 2.0, CELL_PIXEL_SIZE / 2.0)
+
+func _clear_all_explosions() -> void:
+	_clear_explosion_store(player_explosions)
+	_clear_explosion_store(opponent_explosions)
+	_clear_opponent_ships()
+	opponent_destroyed_ships.clear()
+
+func _clear_explosion_store(store: Dictionary) -> void:
+	for key in store.keys():
+		var sprite: Sprite2D = store[key]
+		if is_instance_valid(sprite):
+			sprite.queue_free()
+	store.clear()
+
+func _clear_opponent_ships() -> void:
+	if opponent_ships_overlay:
+		for child in opponent_ships_overlay.get_children():
+			child.queue_free()
+	opponent_revealed_counts = {2: 0, 3: 0, 4: 0, 5: 0}
+
+func _compare_vector2i(a: Vector2i, b: Vector2i) -> bool:
+	if a.x == b.x:
+		return a.y < b.y
+	return a.x < b.x
 
 func _apply_style(button: Button, state: int, disabled: bool, allow_hover: bool) -> void:
 	var style: StyleBoxTexture = cell_styles.get(state, cell_styles[CellVisualState.BASE])
