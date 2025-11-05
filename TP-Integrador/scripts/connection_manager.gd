@@ -27,20 +27,13 @@ func _on_state_update(payload: PackedByteArray) -> void:
 		return
 
 	var game_board := get_node("HFlowContainer")
+	var header := payload[0]
 
-	match payload[0]:
+	match header:
 		0:
 			game_board.switch_to_start()
 		1:
 			game_board.switch_to_waiting_for_other_player()
-		2:
-			game_board.current_ship_size = 2
-		3:
-			game_board.current_ship_size = 3
-		4:
-			game_board.current_ship_size = 4
-		5:
-			game_board.current_ship_size = 5
 		254:
 			ConnectionState.tcp = null
 			ConnectionState.reset()
@@ -67,6 +60,7 @@ func _on_state_update(payload: PackedByteArray) -> void:
 		game_board.update_opponent_cell_from_value(row, col, cell_value, disable_target)
 
 	game_board.rebuild_player_ships(payload)
+	game_board.update_status(header, payload[1] == 1)
 
 func _handle_disconnection():
 	ConnectionState.tcp = null
