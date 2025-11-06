@@ -33,3 +33,5 @@
 
 # Godot
 .godot
+
+server.log

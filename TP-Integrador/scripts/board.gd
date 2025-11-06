@@ -4,13 +4,14 @@ extends Node
 @onready var grid_player_2 = $Player2Panel/Player2Board
 @onready var player_ships_overlay: Node2D = $Player1Panel/Player1Overlay
 @onready var player_effects_overlay: Node2D = $Player1Panel/Player1Effects
-@onready var opponent_ships_overlay: Node2D = $Player2Panel/Player2Overlay
 @onready var opponent_effects_overlay: Node2D = $Player2Panel/Player2Effects
 @onready var preview_overlay: Node2D = $Player1Panel/Player1Preview
 @onready var status_panel: Panel = get_parent().get_node("StatusPanel")
 @onready var phase_label: Label = status_panel.get_node("MarginContainer/VBoxContainer/PhaseLabel")
 @onready var turn_label: Label = status_panel.get_node("MarginContainer/VBoxContainer/TurnLabel")
 @onready var placement_container: HBoxContainer = status_panel.get_node("MarginContainer/VBoxContainer/PlacementContainer")
+@onready var player_name_label: Label = status_panel.get_node("MarginContainer/VBoxContainer/PlayerNameLabel")
+@onready var opponent_name_label: Label = status_panel.get_node("MarginContainer/VBoxContainer/OpponentNameLabel")
 
 const GRID_SIZE := 10
 const CELL_PIXEL_SIZE := 60
@@ -89,9 +90,12 @@ var preview_sprite: Sprite2D
 var explosion_textures: Array[Texture2D] = []
 var player_explosions := {}
 var opponent_explosions := {}
-var opponent_destroyed_ships := {}
-var opponent_revealed_counts := {2: 0, 3: 0, 4: 0, 5: 0}
+var opponent_destroyed_ship_keys := {}
 var player_ship_layout: Array = []
+var player_display_name: String = ""
+var opponent_display_name: String = ""
+var last_status_header: int = -1
+var last_status_is_player_turn: bool = false
 
 func _input(event):
 	if event.is_action_released("rotate"):
@@ -106,6 +110,7 @@ func _ready() -> void:
 	_init_ship_textures()
 	_init_explosion_textures()
 	_init_status_ui()
+	_refresh_name_labels()
 	_update_placement_icons(0)
 	for row in range(GRID_SIZE):
 		var row_array := []
@@ -587,6 +592,27 @@ func _store_layout_entry(start_row: int, start_col: int, length: int, horizontal
 		"horizontal": horizontal,
 	})
 
+func update_player_names(player_name: String, opponent_name: String) -> void:
+	player_display_name = player_name.strip_edges()
+	opponent_display_name = opponent_name.strip_edges()
+	_refresh_name_labels()
+	if last_status_header != -1:
+		update_status(last_status_header, last_status_is_player_turn)
+
+func _refresh_name_labels() -> void:
+	if player_name_label:
+		var label := player_display_name if _has_player_name() else "Vos"
+		player_name_label.text = "Jugador: %s" % label
+	if opponent_name_label:
+		var label := opponent_display_name if _has_opponent_name() else "Oponente"
+		opponent_name_label.text = "Oponente: %s" % label
+
+func _has_player_name() -> bool:
+	return player_display_name != ""
+
+func _has_opponent_name() -> bool:
+	return opponent_display_name != ""
+
 func _spawn_ship_sprite(texture: Texture2D, length: int, start_row: int, start_col: int, horizontal: bool) -> void:
 	var sprite := _create_ship_sprite(texture, length, start_row, start_col, horizontal, 2)
 	if sprite == null:
@@ -614,9 +640,15 @@ func _create_ship_sprite(texture: Texture2D, length: int, start_row: int, start_
 	return sprite
 
 func update_status(header: int, is_player_turn: bool) -> void:
+	last_status_header = header
+	last_status_is_player_turn = is_player_turn
 	var active_length: int = 0
 	var phase_text: String = ""
 	var info_text: String = ""
+	var has_player_name := _has_player_name()
+	var has_opponent_name := _has_opponent_name()
+	var player_name := player_display_name
+	var opponent_name := opponent_display_name
 	match header:
 		254:
 			phase_text = "¡Ganaste!"
@@ -642,16 +674,27 @@ func update_status(header: int, is_player_turn: bool) -> void:
 				info_text = "Faltan: %s" % String(", ").join(remaining)
 		1:
 			current_ship_size = 0
-			phase_text = "Esperando a que el oponente coloque sus barcos..."
+			if has_opponent_name:
+				phase_text = "Esperando a que %s coloque sus barcos..." % opponent_name
+			else:
+				phase_text = "Esperando a que el oponente coloque sus barcos..."
 			info_text = "Barcos listos: %d / %d" % [placement_progress, PLACEMENT_SEQUENCE.size()]
 		0:
 			current_ship_size = 0
 			if is_player_turn:
-				phase_text = "¡Tu turno para atacar!"
-				info_text = "Seleccioná una celda del tablero enemigo."
+				if has_player_name:
+					phase_text = "¡Tu turno, %s!" % player_name
+					info_text = "Seleccioná una celda del tablero enemigo de %s." % (opponent_name if has_opponent_name else "tu oponente")
+				else:
+					phase_text = "¡Tu turno para atacar!"
+					info_text = "Seleccioná una celda del tablero enemigo."
 			else:
-				phase_text = "Turno del oponente..."
-				info_text = "Esperá el disparo del oponente."
+				if has_opponent_name:
+					phase_text = "Turno de %s..." % opponent_name
+					info_text = "%s está atacando. Esperá su disparo." % opponent_name
+				else:
+					phase_text = "Turno del oponente..."
+					info_text = "Esperá el disparo del oponente."
 		_:
 			current_ship_size = 0
 			phase_text = "Preparando partida..."
@@ -809,24 +852,9 @@ func _process_destroyed_opponent_ships() -> void:
 			if not all_hit:
 				continue
 			var ship_key := _ship_coords_key(coords)
-			if opponent_destroyed_ships.has(ship_key):
+			if opponent_destroyed_ship_keys.has(ship_key):
 				continue
-			var min_row: int = coords[0].x
-			var min_col: int = coords[0].y
-			for point in coords:
-				var coord_point: Vector2i = point
-				min_row = min(min_row, coord_point.x)
-				min_col = min(min_col, coord_point.y)
-			var length: int = coords.size()
-			var horizontal: bool = bool(ship_info.get("horizontal", true))
-			var ship_data := {
-				"length": length,
-				"horizontal": horizontal,
-				"start_row": min_row,
-				"start_col": min_col,
-			}
-			opponent_destroyed_ships[ship_key] = ship_data
-			_reveal_opponent_ship(ship_key, ship_data)
+			opponent_destroyed_ship_keys[ship_key] = true
 			_handle_opponent_ship_destroyed(coords)
 
 func _collect_ship_from_raw(raw_values: Array, visited: Array, start_row: int, start_col: int) -> Dictionary:
@@ -874,29 +902,6 @@ func _ship_coords_key(coords: Array) -> String:
 		var pos: Vector2i = coord
 		parts.append("%d_%d" % [pos.x, pos.y])
 	return String(";").join(parts)
-
-func _reveal_opponent_ship(ship_key: String, ship_data: Dictionary) -> void:
-	if opponent_ships_overlay == null:
-		return
-	var length: int = ship_data.get("length", 0)
-	if length < 2:
-		return
-	var textures: Array = ship_textures_by_length.get(length, [])
-	if textures.is_empty():
-		return
-	var reveal_count: int = opponent_revealed_counts.get(length, 0)
-	var texture_index: int = min(reveal_count, textures.size() - 1)
-	var texture: Texture2D = textures[texture_index]
-	opponent_revealed_counts[length] = reveal_count + 1
-	var horizontal: bool = bool(ship_data.get("horizontal", true))
-	var start_row: int = ship_data.get("start_row", 0)
-	var start_col: int = ship_data.get("start_col", 0)
-	var sprite := _create_ship_sprite(texture, length, start_row, start_col, horizontal, 2)
-	if sprite == null:
-		return
-	opponent_ships_overlay.add_child(sprite)
-	ship_data["sprite"] = sprite
-	opponent_destroyed_ships[ship_key] = ship_data
 
 func _handle_opponent_ship_destroyed(coords: Array) -> void:
 	var ordered := coords.duplicate()
@@ -975,8 +980,7 @@ func _cell_center_position(row: int, col: int) -> Vector2:
 func _clear_all_explosions(clear_player_layout: bool = true) -> void:
 	_clear_explosion_store(player_explosions)
 	_clear_explosion_store(opponent_explosions)
-	_clear_opponent_ships()
-	opponent_destroyed_ships.clear()
+	opponent_destroyed_ship_keys.clear()
 	if clear_player_layout:
 		player_ship_layout.clear()
 
@@ -986,12 +990,6 @@ func _clear_explosion_store(store: Dictionary) -> void:
 		if is_instance_valid(sprite):
 			sprite.queue_free()
 	store.clear()
-
-func _clear_opponent_ships() -> void:
-	if opponent_ships_overlay:
-		for child in opponent_ships_overlay.get_children():
-			child.queue_free()
-	opponent_revealed_counts = {2: 0, 3: 0, 4: 0, 5: 0}
 
 func _compare_vector2i(a: Vector2i, b: Vector2i) -> bool:
 	if a.x == b.x:

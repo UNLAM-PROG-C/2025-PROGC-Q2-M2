@@ -1,6 +1,7 @@
 extends Node
 
 signal state_update(payload: PackedByteArray)
+signal names_update(player_name: String, opponent_name: String)
 
 enum ConnectionStatus {
 	DISCONNECTED,
@@ -13,20 +14,25 @@ const HEADER_SIZE := 3
 
 const ServerMessageType := {
 	STATE_UPDATE = 0,
+	NAMES_UPDATE = 1,
 }
 
 const ClientMessageType := {
 	GET_STATE = 0,
 	HIT = 1,
 	PLACE_BOAT = 2,
+	SET_NAME = 3,
 }
 
 var status: ConnectionStatus = ConnectionStatus.DISCONNECTED
 var tcp: StreamPeerTCP
 var _receive_buffer := PackedByteArray()
+var player_name: String = ""
+var opponent_name: String = ""
 
 func reset() -> void:
 	_receive_buffer.clear()
+	opponent_name = ""
 
 func send_message(message_type: int, payload: PackedByteArray = PackedByteArray()) -> void:
 	if not tcp:
@@ -67,6 +73,8 @@ func _process_buffer() -> void:
 		match message_type:
 			ServerMessageType.STATE_UPDATE:
 				emit_signal("state_update", payload)
+			ServerMessageType.NAMES_UPDATE:
+				_process_names_payload(payload)
 			_:
 				print("Warning: received unknown server message type: %d" % message_type)
 
@@ -74,3 +82,25 @@ func _process_buffer() -> void:
 			_receive_buffer.clear()
 		else:
 			_receive_buffer = _receive_buffer.slice(total_length, _receive_buffer.size())
+
+func _process_names_payload(payload: PackedByteArray) -> void:
+	if payload.size() < 2:
+		print("Warning: received names payload too short")
+		return
+	var index := 0
+	var self_len := payload[index]
+	index += 1
+	if payload.size() < index + self_len + 1:
+		print("Warning: names payload truncated for player name")
+		return
+	var self_bytes := payload.slice(index, index + self_len)
+	index += self_len
+	var opponent_len := payload[index]
+	index += 1
+	if payload.size() < index + opponent_len:
+		print("Warning: names payload truncated for opponent name")
+		return
+	var opponent_bytes := payload.slice(index, index + opponent_len)
+	player_name = self_bytes.get_string_from_utf8().strip_edges()
+	opponent_name = opponent_bytes.get_string_from_utf8().strip_edges()
+	emit_signal("names_update", player_name, opponent_name)

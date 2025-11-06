@@ -30,6 +30,14 @@ text = "ENTER IP ADDRESS"
 [node name="IpInput" type="LineEdit" parent="Panel/VBoxContainer"]
 layout_mode = 2
 
+[node name="NameLabel" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "ENTER YOUR NAME"
+
+[node name="NameInput" type="LineEdit" parent="Panel/VBoxContainer"]
+layout_mode = 2
+max_length = 24
+
 [node name="StartButton" type="Button" parent="Panel/VBoxContainer"]
 layout_mode = 2
 text = "CONFIRM"

@@ -2,8 +2,10 @@ extends Node
 
 func _ready() -> void:
 	ConnectionState.state_update.connect(_on_state_update)
+	ConnectionState.names_update.connect(_on_names_update)
 	if ConnectionState.tcp:
 		ConnectionState.reset()
+	_apply_names()
 
 func _process(delta: float) -> void:
 	if not ConnectionState.tcp:
@@ -68,4 +70,14 @@ func _handle_disconnection():
 	ConnectionState.reset()
 	ConnectionState.status = ConnectionState.ConnectionStatus.DISCONNECTED
 	get_tree().change_scene_to_file("res://main.tscn")
-	
+
+func _on_names_update(player_name: String, opponent_name: String) -> void:
+	_apply_names()
+
+func _apply_names() -> void:
+	var game_board := get_node_or_null("HFlowContainer")
+	if not game_board:
+		return
+	if not game_board.has_method("update_player_names"):
+		return
+	game_board.update_player_names(ConnectionState.player_name, ConnectionState.opponent_name)

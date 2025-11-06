@@ -11,11 +11,14 @@ use std::{
 const BOARD_SIZE: u8 = 10;
 const CLIENT_HEADER_SIZE: usize = 3;
 const SERVER_HEADER_SIZE: usize = 3;
+const MAX_NAME_LENGTH: usize = 24;
 
 #[derive(Default)]
 pub struct GameServer {
     player_a: RwLock<Board>,
     player_b: RwLock<Board>,
+    player_a_name: RwLock<Option<String>>,
+    player_b_name: RwLock<Option<String>>,
     turn_player_a: AtomicBool,
     all_boats_placed_player_a: AtomicBool,
     all_boats_placed_player_b: AtomicBool,
@@ -99,98 +102,74 @@ impl Player {
 }
 
 #[derive(Debug, Clone, Copy)]
-enum ClientMessageType {
-    GetState = 0,
-    Hit = 1,
-    PlaceBoat = 2,
-}
-
-impl ClientMessageType {
-    fn from_byte(value: u8) -> Option<Self> {
-        match value {
-            0 => Some(Self::GetState),
-            1 => Some(Self::Hit),
-            2 => Some(Self::PlaceBoat),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
 #[repr(u8)]
 enum ServerMessageType {
     StateUpdate = 0,
+    NamesUpdate = 1,
 }
 
-#[derive(Debug, Clone, Copy)]
-struct ClientMessage {
-    message_type: ClientMessageType,
-    x1: u8,
-    y1: u8,
-    x2: u8,
-    y2: u8,
+#[derive(Debug, Clone)]
+enum ClientMessage {
+    GetState,
+    Hit { x: u8, y: u8 },
+    PlaceBoat { x1: u8, y1: u8, x2: u8, y2: u8 },
+    SetName(String),
 }
 
 #[derive(Debug)]
 enum ClientMessageParseError {
     UnknownMessageType(u8),
     InvalidLength { expected: usize, actual: usize },
+    InvalidUtf8,
 }
 
 impl ClientMessage {
     fn from_parts(message_type_byte: u8, payload: &[u8]) -> Result<Self, ClientMessageParseError> {
-        let Some(message_type) = ClientMessageType::from_byte(message_type_byte) else {
-            return Err(ClientMessageParseError::UnknownMessageType(
-                message_type_byte,
-            ));
-        };
-
-        match message_type {
-            ClientMessageType::GetState => {
+        match message_type_byte {
+            0 => {
                 if !payload.is_empty() {
                     return Err(ClientMessageParseError::InvalidLength {
                         expected: 0,
                         actual: payload.len(),
                     });
                 }
-                Ok(Self {
-                    message_type,
-                    x1: 0,
-                    y1: 0,
-                    x2: 0,
-                    y2: 0,
-                })
+                Ok(Self::GetState)
             }
-            ClientMessageType::Hit => {
+            1 => {
                 if payload.len() != 2 {
                     return Err(ClientMessageParseError::InvalidLength {
                         expected: 2,
                         actual: payload.len(),
                     });
                 }
-                Ok(Self {
-                    message_type,
-                    x1: payload[0],
-                    y1: payload[1],
-                    x2: 0,
-                    y2: 0,
+                Ok(Self::Hit {
+                    x: payload[0],
+                    y: payload[1],
                 })
             }
-            ClientMessageType::PlaceBoat => {
+            2 => {
                 if payload.len() != 4 {
                     return Err(ClientMessageParseError::InvalidLength {
                         expected: 4,
                         actual: payload.len(),
                     });
                 }
-                Ok(Self {
-                    message_type,
+                Ok(Self::PlaceBoat {
                     x1: payload[0],
                     y1: payload[1],
                     x2: payload[2],
                     y2: payload[3],
                 })
             }
+            3 => {
+                let name = std::str::from_utf8(payload)
+                    .map_err(|_| ClientMessageParseError::InvalidUtf8)?
+                    .to_string();
+                Ok(Self::SetName(name))
+            }
+            _ => Err(ClientMessageParseError::UnknownMessageType(
+                message_type_byte,
+            )),
         }
     }
 }
@@ -210,6 +189,12 @@ impl GameServer {
         if let Err(err) = self.send_state_update_to(player) {
             logger::log(&format!(
                 "Failed to send initial state to {:?}: {err}",
+                player
+            ));
+        }
+        if let Err(err) = self.send_names_to(player) {
+            logger::log(&format!(
+                "Failed to send initial names to {:?}: {err}",
                 player
             ));
         }
@@ -247,6 +232,10 @@ impl GameServer {
                             logger::log(&format!(
                                 "Received message with invalid length. Expected {expected} got {actual}"
                             ));
+                            continue;
+                        }
+                        Err(ClientMessageParseError::InvalidUtf8) => {
+                            logger::log("Received name payload with invalid UTF-8 data");
                             continue;
                         }
                     };
@@ -295,38 +284,34 @@ impl GameServer {
     }
 
     fn validate_message(message: &ClientMessage) -> Result<(), String> {
-        match message.message_type {
-            ClientMessageType::GetState => Ok(()),
-            ClientMessageType::Hit => {
-                if !Self::is_valid_cell(message.x1, message.y1) {
+        match message {
+            ClientMessage::GetState => Ok(()),
+            ClientMessage::Hit { x, y } => {
+                if !Self::is_valid_cell(*x, *y) {
                     return Err(format!(
-                        "Received hit message with out-of-bounds coordinates ({}, {})",
-                        message.x1, message.y1
+                        "Received hit message with out-of-bounds coordinates ({x}, {y})"
                     ));
                 }
                 Ok(())
             }
-            ClientMessageType::PlaceBoat => {
-                if !Self::is_valid_cell(message.x1, message.y1)
-                    || !Self::is_valid_cell(message.x2, message.y2)
-                {
+            ClientMessage::PlaceBoat { x1, y1, x2, y2 } => {
+                if !Self::is_valid_cell(*x1, *y1) || !Self::is_valid_cell(*x2, *y2) {
                     return Err(format!(
-                        "Received boat placement with out-of-bounds coordinates ({}, {}) -> ({}, {})",
-                        message.x1, message.y1, message.x2, message.y2
+                        "Received boat placement with out-of-bounds coordinates ({x1}, {y1}) -> ({x2}, {y2})"
                     ));
                 }
 
-                if message.x1 != message.x2 && message.y1 != message.y2 {
+                if x1 != x2 && y1 != y2 {
                     return Err(
                         "Received boat placement that is neither horizontal nor vertical"
                             .to_string(),
                     );
                 }
 
-                let length = if message.x1 == message.x2 {
-                    message.y1.abs_diff(message.y2) + 1
+                let length = if x1 == x2 {
+                    y1.abs_diff(*y2) + 1
                 } else {
-                    message.x1.abs_diff(message.x2) + 1
+                    x1.abs_diff(*x2) + 1
                 };
 
                 if BoatLength::from_length(length).is_none() {
@@ -335,6 +320,19 @@ impl GameServer {
                     ));
                 }
 
+                Ok(())
+            }
+            ClientMessage::SetName(name) => {
+                let trimmed = name.trim();
+                if trimmed.is_empty() {
+                    return Err("Received empty player name".to_string());
+                }
+                let char_count = trimmed.chars().count();
+                if char_count > MAX_NAME_LENGTH {
+                    return Err(format!(
+                        "Received player name longer than {MAX_NAME_LENGTH} characters"
+                    ));
+                }
                 Ok(())
             }
         }
@@ -346,19 +344,20 @@ impl GameServer {
 
     fn handle_client_message(&self, player: Player, message: ClientMessage) -> bool {
         let mut should_broadcast = false;
+        let mut should_continue = true;
 
-        match message.message_type {
-            ClientMessageType::PlaceBoat => {
+        match message {
+            ClientMessage::PlaceBoat { x1, y1, x2, y2 } => {
                 logger::log(&format!(
-                    "Player {:?} -> PlaceBoat from ({}, {}) to ({}, {})",
-                    player, message.x1, message.y1, message.x2, message.y2
+                    "{} -> PlaceBoat from ({x1}, {y1}) to ({x2}, {y2})",
+                    self.player_label(player)
                 ));
                 match player {
                     Player::A => {
                         self.player_a
                             .write()
                             .expect("Couldn't place boat for player A")
-                            .place_boat(message.x1, message.y1, message.x2, message.y2);
+                            .place_boat(x1, y1, x2, y2);
                         self.all_boats_placed_player_a.store(
                             self.player_a
                                 .read()
@@ -371,7 +370,7 @@ impl GameServer {
                         self.player_b
                             .write()
                             .expect("Couldn't place boat for player B")
-                            .place_boat(message.x1, message.y1, message.x2, message.y2);
+                            .place_boat(x1, y1, x2, y2);
                         self.all_boats_placed_player_b.store(
                             self.player_b
                                 .read()
@@ -383,12 +382,12 @@ impl GameServer {
                 }
                 should_broadcast = true;
             }
-            ClientMessageType::GetState => {
-                logger::log(&format!("Player {:?} -> GetState", player));
+            ClientMessage::GetState => {
+                logger::log(&format!("{} -> GetState", self.player_label(player)));
                 match self.send_state_update_to(player) {
                     Ok(result) => {
                         if result.game_ended {
-                            return false;
+                            should_continue = false;
                         }
                     }
                     Err(err) => {
@@ -400,11 +399,16 @@ impl GameServer {
                         return false;
                     }
                 }
+                if should_continue {
+                    if let Err(err) = self.send_names_to(player) {
+                        logger::log(&format!("Failed to send names to {:?}: {err}", player));
+                    }
+                }
             }
-            ClientMessageType::Hit => {
+            ClientMessage::Hit { x, y } => {
                 logger::log(&format!(
-                    "Player {:?} -> Hit at ({}, {})",
-                    player, message.x1, message.y1
+                    "{} -> Hit at ({x}, {y})",
+                    self.player_label(player)
                 ));
                 if !self.all_boats_placed_player_a.load(Ordering::Relaxed)
                     && !self.all_boats_placed_player_b.load(Ordering::Relaxed)
@@ -422,7 +426,7 @@ impl GameServer {
                             self.player_b
                                 .write()
                                 .expect("Couldnt write to player b board")
-                                .get_hit(message.x1, message.y1);
+                                .get_hit(x, y);
                             self.turn_player_a.store(false, Ordering::Release);
                             hit_performed = true;
                         }
@@ -432,7 +436,7 @@ impl GameServer {
                             self.player_a
                                 .write()
                                 .expect("Couldnt write to player a board")
-                                .get_hit(message.x1, message.y1);
+                                .get_hit(x, y);
                             self.turn_player_a.store(true, Ordering::Release);
                             hit_performed = true;
                         }
@@ -440,6 +444,16 @@ impl GameServer {
                 }
 
                 should_broadcast = hit_performed;
+            }
+            ClientMessage::SetName(name) => {
+                let trimmed = name.trim();
+                let previous_label = self.player_label(player);
+                self.set_player_name(player, Some(trimmed.to_string()));
+                logger::log(&format!(
+                    "{} is now known as {trimmed}",
+                    previous_label
+                ));
+                self.broadcast_names();
             }
         }
 
@@ -450,7 +464,7 @@ impl GameServer {
             }
         }
 
-        true
+        should_continue
     }
 
     fn broadcast_state_update(&self) -> bool {
@@ -474,27 +488,7 @@ impl GameServer {
 
     fn send_state_update_to(&self, player: Player) -> io::Result<SendResult> {
         let (state, game_ended) = self.get_state(player);
-        if state.len() > u16::MAX as usize {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                "State payload larger than u16::MAX",
-            ));
-        }
-        let mut header = [0_u8; SERVER_HEADER_SIZE];
-        header[0] = ServerMessageType::StateUpdate as u8;
-        header[1..3].copy_from_slice(&(state.len() as u16).to_le_bytes());
-
-        let mut guard = self
-            .connection_mutex(player)
-            .lock()
-            .expect("Mutex poisoned");
-        if let Some(stream) = guard.as_mut() {
-            stream.write_all(&header)?;
-            if !state.is_empty() {
-                stream.write_all(&state)?;
-            }
-        }
-
+        self.write_message(player, ServerMessageType::StateUpdate, &state)?;
         Ok(SendResult { game_ended })
     }
 
@@ -522,6 +516,87 @@ impl GameServer {
         }
     }
 
+    fn player_name_lock(&self, player: Player) -> &RwLock<Option<String>> {
+        match player {
+            Player::A => &self.player_a_name,
+            Player::B => &self.player_b_name,
+        }
+    }
+
+    fn player_name(&self, player: Player) -> Option<String> {
+        self.player_name_lock(player)
+            .read()
+            .expect("Failed to read player name")
+            .clone()
+            .filter(|name| !name.trim().is_empty())
+    }
+
+    fn set_player_name(&self, player: Player, name: Option<String>) {
+        *self
+            .player_name_lock(player)
+            .write()
+            .expect("Failed to write player name") = name;
+    }
+
+    fn player_label(&self, player: Player) -> String {
+        self.player_name(player)
+            .unwrap_or_else(|| format!("Player {:?}", player))
+    }
+
+    fn write_message(
+        &self,
+        player: Player,
+        message_type: ServerMessageType,
+        payload: &[u8],
+    ) -> io::Result<()> {
+        if payload.len() > u16::MAX as usize {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Message payload larger than u16::MAX",
+            ));
+        }
+        let mut header = [0_u8; SERVER_HEADER_SIZE];
+        header[0] = message_type as u8;
+        header[1..3].copy_from_slice(&(payload.len() as u16).to_le_bytes());
+
+        let mut guard = self
+            .connection_mutex(player)
+            .lock()
+            .expect("Mutex poisoned");
+        if let Some(stream) = guard.as_mut() {
+            stream.write_all(&header)?;
+            if !payload.is_empty() {
+                stream.write_all(payload)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn send_names_to(&self, player: Player) -> io::Result<()> {
+        let self_name = self.player_name(player).unwrap_or_default();
+        let opponent_name = self.player_name(player.opponent()).unwrap_or_default();
+        let self_bytes = self_name.as_bytes();
+        let opponent_bytes = opponent_name.as_bytes();
+        let self_len = self_bytes.len().min(u8::MAX as usize);
+        let opponent_len = opponent_bytes.len().min(u8::MAX as usize);
+
+        let mut payload = Vec::with_capacity(2 + self_len + opponent_len);
+        payload.push(self_len as u8);
+        payload.extend_from_slice(&self_bytes[..self_len]);
+        payload.push(opponent_len as u8);
+        payload.extend_from_slice(&opponent_bytes[..opponent_len]);
+
+        self.write_message(player, ServerMessageType::NamesUpdate, &payload)
+    }
+
+    fn broadcast_names(&self) {
+        for player in [Player::A, Player::B] {
+            if let Err(err) = self.send_names_to(player) {
+                logger::log(&format!("Failed to send names to {:?}: {err}", player));
+            }
+        }
+    }
+
     fn handle_disconnect(&self, player: Player) {
         match player {
             Player::A => {
@@ -533,6 +608,8 @@ impl GameServer {
         }
         self.unregister_connection(player);
 
+        self.set_player_name(player, None);
+
         let opponent = player.opponent();
         if let Err(err) = self.send_state_update_to(opponent) {
             logger::log(&format!(
@@ -540,6 +617,12 @@ impl GameServer {
                 opponent
             ));
             self.unregister_connection(opponent);
+        }
+        if let Err(err) = self.send_names_to(opponent) {
+            logger::log(&format!(
+                "Failed to send updated names to {:?}: {err}",
+                opponent
+            ));
         }
     }
 
