@@ -1,0 +1,113 @@
+[gd_scene load_steps=8 format=3 uid="uid://werrgkb5uwex"]
+
+[ext_resource type="Script" uid="uid://c0bolawr08484" path="res://scripts/login.gd" id="1_6hqeh"]
+[ext_resource type="Texture2D" uid="uid://dhniorm1mxvd1" path="res://assets/background_main.png" id="2_edd8a"]
+[ext_resource type="FontFile" uid="uid://br4r3b7s1x2km" path="res://assets/fonts/Gimme Danger.ttf" id="3_eqty5"]
+[ext_resource type="Script" uid="uid://c57v2o66y0r2i" path="res://scripts/background_layer.gd" id="4_ma4wh"]
+[ext_resource type="Texture2D" uid="uid://dtgqj1wnggr4m" path="res://assets/ships_sheet_destroyed.png" id="5_0s12h"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fu7sn"]
+bg_color = Color(0.49019608, 0.49019608, 0.49019608, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jix8l"]
+bg_color = Color(0.7647059, 0.7647059, 0.7647059, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.10980392, 0.050980393, 0.007843138, 1)
+border_blend = true
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 1
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_6hqeh")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_edd8a")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -156.5
+offset_top = -45.0
+offset_right = 156.5
+offset_bottom = 45.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/outline_size = 5
+theme_override_constants/shadow_outline_size = 0
+theme_override_fonts/font = ExtResource("3_eqty5")
+theme_override_font_sizes/font_size = 100
+text = "BATALLA NAVAL"
+
+[node name="PlayButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(350, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(0.10980392, 0.050980393, 0.007843138, 1)
+theme_override_fonts/font = ExtResource("3_eqty5")
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_fu7sn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_jix8l")
+text = "Jugar"
+
+[node name="BackgroundLayer" type="Node2D" parent="."]
+script = ExtResource("4_ma4wh")
+
+[node name="Boat1" type="Sprite2D" parent="BackgroundLayer"]
+position = Vector2(878.00006, 180)
+rotation = 0.42586035
+scale = Vector2(0.60779065, 0.90470845)
+texture = ExtResource("5_0s12h")
+region_enabled = true
+region_rect = Rect2(135.1258, 37.34523, 1213.8718, 223.06194)
+
+[node name="Boat2" type="Sprite2D" parent="BackgroundLayer"]
+position = Vector2(874, 859)
+rotation = -0.37873644
+texture = ExtResource("5_0s12h")
+region_enabled = true
+region_rect = Rect2(337.43787, 452.34424, 741.81055, 155.62463)
+
+[node name="Boat3" type="Sprite2D" parent="BackgroundLayer"]
+position = Vector2(143.00002, 686.99994)
+rotation = 0.20071286
+scale = Vector2(0.7431347, 0.9553528)
+texture = ExtResource("5_0s12h")
+region_enabled = true
+region_rect = Rect2(131, 539, 232, 211)
