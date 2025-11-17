@@ -96,14 +96,34 @@ var player_display_name: String = ""
 var opponent_display_name: String = ""
 var last_status_header: int = -1
 var last_status_is_player_turn: bool = false
+var interactions_enabled: bool = false
 
 func _input(event):
-	if event.is_action_released("rotate"):
-		if current_orientation == "horizontal":
-			current_orientation = "vertical"
-		else:
+	if not (event is InputEventKey):
+		return
+
+	# Solo nos interesa cuando se presiona (no cuando se mantiene apretada)
+	if not event.pressed or event.echo:
+		return
+
+	# Solo permitir rotar mientras estamos en la fase de colocación
+	if not pre_start_mode or current_ship_size <= 0:
+		return
+
+	# Flechas izquierda / derecha → orientación horizontal
+	if event.keycode == KEY_LEFT or event.keycode == KEY_RIGHT:
+		if current_orientation != "horizontal":
 			current_orientation = "horizontal"
-		_on_cell_hover_enter(last_hover_start.x, last_hover_start.y)
+			if last_hover_start.x >= 0:
+				_on_cell_hover_enter(last_hover_start.x, last_hover_start.y)
+
+	# Flechas arriba / abajo → orientación vertical
+	elif event.keycode == KEY_UP or event.keycode == KEY_DOWN:
+		if current_orientation != "vertical":
+			current_orientation = "vertical"
+			if last_hover_start.x >= 0:
+				_on_cell_hover_enter(last_hover_start.x, last_hover_start.y)
+
 
 func _ready() -> void:
 	_init_styles()
@@ -303,13 +323,13 @@ func set_player_cell_state(row: int, col: int, state: int, disabled_override: Va
 func set_opponent_cell_state(row: int, col: int, state: int, disabled: bool) -> void:
 	opponent_cell_states[row][col] = state
 	var button: Button = button_grid_player_2[row][col]
-	_apply_style(button, state, disabled, false)
+	_apply_style(button, state, disabled, interactions_enabled)
 
 func _refresh_opponent_styles() -> void:
 	for row_idx in range(GRID_SIZE):
 		for col_idx in range(GRID_SIZE):
 			var button: Button = button_grid_player_2[row_idx][col_idx]
-			_apply_style(button, opponent_cell_states[row_idx][col_idx], button.disabled, false)
+			_apply_style(button, opponent_cell_states[row_idx][col_idx], button.disabled, interactions_enabled)
 
 func _apply_hover_override(button: Button) -> void:
 	button.add_theme_stylebox_override("normal", hover_style)
@@ -602,10 +622,10 @@ func update_player_names(player_name: String, opponent_name: String) -> void:
 func _refresh_name_labels() -> void:
 	if player_name_label:
 		var label := player_display_name if _has_player_name() else "Vos"
-		player_name_label.text = "Jugador: %s" % label
+		player_name_label.text = "Jugador:   %s" % label
 	if opponent_name_label:
-		var label := opponent_display_name if _has_opponent_name() else "Oponente"
-		opponent_name_label.text = "Oponente: %s" % label
+		var label := opponent_display_name if _has_opponent_name() else "Desconocido"
+		opponent_name_label.text = "Oponente:   %s" % label
 
 func _has_player_name() -> bool:
 	return player_display_name != ""
@@ -649,6 +669,10 @@ func update_status(header: int, is_player_turn: bool) -> void:
 	var has_opponent_name := _has_opponent_name()
 	var player_name := player_display_name
 	var opponent_name := opponent_display_name
+
+	# Por defecto, deshabilitamos interacciones (hover en tablero derecho)
+	interactions_enabled = false
+
 	match header:
 		254:
 			phase_text = "¡Ganaste!"
@@ -664,7 +688,7 @@ func update_status(header: int, is_player_turn: bool) -> void:
 			active_length = header
 			var seq_index: int = min(placement_progress, PLACEMENT_SEQUENCE.size() - 1)
 			var ship_name: String = _get_sequence_name(seq_index)
-			phase_text = "Colocá tu %s (%d casillas)" % [ship_name, header]
+			phase_text = "Coloca tu %s (%d casillas)" % [ship_name, header]
 			var remaining: Array[String] = []
 			for i in range(seq_index + 1, PLACEMENT_SEQUENCE.size()):
 				remaining.append(_get_sequence_name(i))
@@ -680,7 +704,11 @@ func update_status(header: int, is_player_turn: bool) -> void:
 				phase_text = "Esperando a que el oponente coloque sus barcos..."
 			info_text = "Barcos listos: %d / %d" % [placement_progress, PLACEMENT_SEQUENCE.size()]
 		0:
+			# PARTIDA EN CURSO → solo permitimos hover en tablero derecho
+			# cuando es tu turno (para que apuntes donde disparar).
 			current_ship_size = 0
+			interactions_enabled = is_player_turn
+
 			if is_player_turn:
 				if has_player_name:
 					phase_text = "¡Tu turno, %s!" % player_name
@@ -699,11 +727,16 @@ func update_status(header: int, is_player_turn: bool) -> void:
 			current_ship_size = 0
 			phase_text = "Preparando partida..."
 			info_text = ""
+
 	phase_label.text = phase_text
 	turn_label.text = info_text
 	_update_placement_icons(active_length)
 	if header != 2 and header != 3 and header != 4 and header != 5:
 		_hide_preview()
+
+	# Cada vez que cambia el estado, refrescamos estilos del tablero enemigo
+	_refresh_opponent_styles()
+
 
 func _init_styles() -> void:
 	if not cell_styles.is_empty():
@@ -1002,7 +1035,37 @@ func _apply_style(button: Button, state: int, disabled: bool, allow_hover: bool)
 	button.add_theme_stylebox_override("normal", style)
 	button.add_theme_stylebox_override("disabled", style)
 	button.add_theme_stylebox_override("pressed", style)
-	if allow_hover and not disabled and state == CellVisualState.BASE:
+
+	# ¿En principio podría tener hover?
+	var can_hover: bool = allow_hover and not disabled and state == CellVisualState.BASE
+
+	# Identificamos de qué tablero es el botón
+	var is_player_board: bool = (button.get_parent() == grid_player_1)
+	var is_opponent_board: bool = (button.get_parent() == grid_player_2)
+
+	var hover_allowed: bool = false
+
+	# 1) Tablero del jugador (izquierdo):
+	#    hover SOLO mientras se están colocando barcos
+	#    (pre_start_mode, con un barco activo y aún faltan por colocar)
+	if can_hover \
+			and is_player_board \
+			and pre_start_mode \
+			and current_ship_size > 0 \
+			and placement_progress < PLACEMENT_SEQUENCE.size():
+		hover_allowed = true
+
+	# 2) Tablero del oponente (derecho):
+	#    hover SOLO cuando se está jugando y es tu turno
+	#    (interactions_enabled lo maneja update_status con header == 0 e is_player_turn == true)
+	elif can_hover \
+			and is_opponent_board \
+			and not pre_start_mode \
+			and interactions_enabled:
+		hover_allowed = true
+
+	if hover_allowed:
 		button.add_theme_stylebox_override("hover", hover_style)
 	else:
+		# En cualquier otro caso, hover igual al estilo normal (no se “ilumina”)
 		button.add_theme_stylebox_override("hover", style)

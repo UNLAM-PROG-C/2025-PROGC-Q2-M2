@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://bk11sf0nj8sgg"]
+[gd_scene load_steps=6 format=3 uid="uid://bk11sf0nj8sgg"]
 
 [ext_resource type="Script" uid="uid://c5a2bjris1o38" path="res://scripts/connection_manager.gd" id="1_okguv"]
 [ext_resource type="Script" uid="uid://na6xxkfa0qcf" path="res://scripts/board.gd" id="2_3eqlr"]
 [ext_resource type="Texture2D" uid="uid://0rhnr022y0wb" path="res://assets/background.png" id="3_j15tx"]
+[ext_resource type="FontFile" uid="uid://br4r3b7s1x2km" path="res://assets/fonts/Gimme Danger.ttf" id="4_ea46o"]
 
 [sub_resource type="StyleBoxFlat" id="1"]
 content_margin_left = 0.0
@@ -151,18 +152,21 @@ theme_override_constants/separation = 6
 [node name="PlayerNameLabel" type="Label" parent="StatusPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Jugador: Vos"
+theme_override_fonts/font = ExtResource("4_ea46o")
+text = "Jugador:    Vos"
 horizontal_alignment = 1
 
 [node name="OpponentNameLabel" type="Label" parent="StatusPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Oponente: Oponente"
+theme_override_fonts/font = ExtResource("4_ea46o")
+text = "Oponente:    ESPERANDO"
 horizontal_alignment = 1
 
 [node name="PhaseLabel" type="Label" parent="StatusPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("4_ea46o")
 text = "Preparando partida..."
 horizontal_alignment = 1
 
