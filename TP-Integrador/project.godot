@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="TP-Integrador"
-run/main_scene="uid://pyyr8tum7367"
+run/main_scene="uid://werrgkb5uwex"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
 
