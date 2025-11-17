@@ -1,8 +1,10 @@
 [gd_scene load_steps=2 format=3 uid="uid://lost_scene_uid"]
 
 [ext_resource type="Texture2D" uid="uid://cj8xe3la1fpsm" path="res://assets/quemado.png" id="1"]
+[ext_resource type="Script" path="res://scripts/lost.gd" id="2"]
 
 [node name="LostScreen" type="Control"]
+script = ExtResource("2")
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
