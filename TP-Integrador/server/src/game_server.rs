@@ -7,7 +7,7 @@ use std::{
         atomic::{AtomicBool, Ordering},
     },
 };
-
+use std::net::Shutdown;
 const BOARD_SIZE: u8 = 10;
 const CLIENT_HEADER_SIZE: usize = 3;
 const SERVER_HEADER_SIZE: usize = 3;
@@ -598,6 +598,7 @@ impl GameServer {
     }
 
     fn handle_disconnect(&self, player: Player) {
+        // Marca forfeit para el jugador que se desconectó
         match player {
             Player::A => {
                 self.player_a_forfeited.store(true, Ordering::Release);
@@ -606,25 +607,51 @@ impl GameServer {
                 self.player_b_forfeited.store(true, Ordering::Release);
             }
         }
-        self.unregister_connection(player);
 
+        // Intentá cerrar/cortar la conexión del jugador desconectado (si existe)
+        if let Some(mut stream) = self
+            .connection_mutex(player)
+            .lock()
+            .expect("Mutex poisoned")
+            .take()
+        {
+            // Intentar un shutdown (ignore error, solo intentamos limpiar)
+            let _ = stream.shutdown(Shutdown::Both);
+            // stream será dropeado al salir del scope
+        }
+
+        // Borramos el nombre del jugador desconectado
         self.set_player_name(player, None);
 
+        // Calculamos el oponente
         let opponent = player.opponent();
-        if let Err(err) = self.send_state_update_to(opponent) {
-            logger::log(&format!(
-                "Failed to notify {:?} about opponent disconnect: {err}",
-                opponent
-            ));
-            self.unregister_connection(opponent);
-        }
-        if let Err(err) = self.send_names_to(opponent) {
-            logger::log(&format!(
-                "Failed to send updated names to {:?}: {err}",
-                opponent
-            ));
+
+        // Intentamos notificar inmediatamente al oponente con el nuevo estado.
+        // Usamos send_state_update_to (que usa get_state y write_message).
+        // Si falla, limpiamos la conexión del oponente también.
+        match self.send_state_update_to(opponent) {
+            Ok(_) => {
+                // También actualizamos los nombres (avisar que el otro se fue)
+                if let Err(err) = self.send_names_to(opponent) {
+                    logger::log(&format!(
+                        "Failed to send updated names to {:?}: {err}",
+                        opponent
+                    ));
+                }
+            }
+            Err(err) => {
+                logger::log(&format!(
+                    "Failed to notify {:?} about opponent disconnect: {err}",
+                    opponent
+                ));
+                // Si no podemos notificar al oponente, es probable que también esté desconectado:
+                // limpiamos su conexión y su nombre.
+                self.unregister_connection(opponent);
+                self.set_player_name(opponent, None);
+            }
         }
     }
+
 
     /// This function encodes the entire state of the game in a 202 byte array
     ///
