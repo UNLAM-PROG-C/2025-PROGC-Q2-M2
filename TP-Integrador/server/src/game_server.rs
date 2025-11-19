@@ -1,4 +1,8 @@
-use crate::{board::{Board, BoatLength}, logger};
+use crate::{
+    board::{Board, BoatLength},
+    logger,
+};
+use std::net::Shutdown;
 use std::{
     io::{self, Read, Write},
     net::TcpStream,
@@ -7,7 +11,6 @@ use std::{
         atomic::{AtomicBool, Ordering},
     },
 };
-use std::net::Shutdown;
 const BOARD_SIZE: u8 = 10;
 const CLIENT_HEADER_SIZE: usize = 3;
 const SERVER_HEADER_SIZE: usize = 3;
@@ -207,19 +210,16 @@ impl GameServer {
                     let payload_len = u16::from_le_bytes([header[1], header[2]]) as usize;
 
                     let mut payload = vec![0_u8; payload_len];
-                    if payload_len > 0 {
-                        if let Err(err) = Self::read_exact_buffered(
-                            &mut buffered,
-                            &mut connection,
-                            &mut payload,
-                        ) {
-                            logger::log(&format!(
-                                "Failed to read payload from tcp stream for {:?}: {err}",
-                                player
-                            ));
-                            self.handle_disconnect(player);
-                            break;
-                        }
+                    if payload_len > 0
+                        && let Err(err) =
+                            Self::read_exact_buffered(&mut buffered, &mut connection, &mut payload)
+                    {
+                        logger::log(&format!(
+                            "Failed to read payload from tcp stream for {:?}: {err}",
+                            player
+                        ));
+                        self.handle_disconnect(player);
+                        break;
                     }
 
                     let message = match ClientMessage::from_parts(message_type, &payload) {
@@ -399,10 +399,8 @@ impl GameServer {
                         return false;
                     }
                 }
-                if should_continue {
-                    if let Err(err) = self.send_names_to(player) {
-                        logger::log(&format!("Failed to send names to {:?}: {err}", player));
-                    }
+                if should_continue && let Err(err) = self.send_names_to(player) {
+                    logger::log(&format!("Failed to send names to {:?}: {err}", player));
                 }
             }
             ClientMessage::Hit { x, y } => {
@@ -449,10 +447,7 @@ impl GameServer {
                 let trimmed = name.trim();
                 let previous_label = self.player_label(player);
                 self.set_player_name(player, Some(trimmed.to_string()));
-                logger::log(&format!(
-                    "{} is now known as {trimmed}",
-                    previous_label
-                ));
+                logger::log(&format!("{} is now known as {trimmed}", previous_label));
                 self.broadcast_names();
             }
         }
@@ -609,7 +604,7 @@ impl GameServer {
         }
 
         // Intentá cerrar/cortar la conexión del jugador desconectado (si existe)
-        if let Some(mut stream) = self
+        if let Some(stream) = self
             .connection_mutex(player)
             .lock()
             .expect("Mutex poisoned")
@@ -651,7 +646,6 @@ impl GameServer {
             }
         }
     }
-
 
     /// This function encodes the entire state of the game in a 202 byte array
     ///

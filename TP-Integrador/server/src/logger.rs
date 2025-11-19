@@ -12,16 +12,13 @@ struct Logger {
 
 impl Logger {
     fn new(path: &Path) -> io::Result<Self> {
-        if let Err(err) = fs::remove_file(path) {
-            if err.kind() != io::ErrorKind::NotFound {
-                return Err(err);
-            }
+        if let Err(err) = fs::remove_file(path)
+            && err.kind() != io::ErrorKind::NotFound
+        {
+            return Err(err);
         }
 
-        let file = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(path)?;
+        let file = OpenOptions::new().create(true).append(true).open(path)?;
 
         Ok(Self {
             file: Mutex::new(file),
