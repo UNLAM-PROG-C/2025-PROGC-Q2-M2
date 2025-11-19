@@ -7,8 +7,8 @@ func _ready():
 
 func _on_retry_pressed():
     # Reiniciar partida (cargar escena del juego)
-    get_tree().change_scene_to_file("res://scenes/game/board.tscn")
+    get_tree().change_scene_to_file("res://main.tscn")
 
 func _on_exit_pressed():
-    # Volver al menú principal
-    get_tree().change_scene_to_file("res://main.tscn")
+    # Cerrar el juego
+    get_tree().quit()
