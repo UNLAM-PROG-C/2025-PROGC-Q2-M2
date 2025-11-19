@@ -17,7 +17,8 @@ fn take_next_connection(queue: &mut Vec<PendingConnection>) -> Option<PendingCon
 
 fn main() {
     logger::init().expect("Failed to initialise logger");
-    let address = "127.0.0.1:1234";
+    //let address = "127.0.0.1:1234";
+	let address = "0.0.0.0:1234";
     let tcp_server = TcpListener::bind(address).unwrap();
     logger::log(&format!("Accepting connections at {address}"));
     let mut player_queue: Vec<PendingConnection> = Vec::new();

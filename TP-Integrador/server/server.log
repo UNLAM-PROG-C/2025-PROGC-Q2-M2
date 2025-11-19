@@ -1,381 +1,71 @@
-<<<<<<< Updated upstream
-[2025-11-16 22:17:19] Logger initialized
-[2025-11-16 22:17:19] Accepting connections at 127.0.0.1:1234
-[2025-11-16 22:17:27] Incoming connection from 127.0.0.1:62515
-[2025-11-16 22:17:31] Incoming connection from 127.0.0.1:62516
-[2025-11-16 22:17:31] Player A is now known as lu
-[2025-11-16 22:17:31] Player B is now known as luwewe
-[2025-11-16 22:17:31] luwewe -> GetState
-[2025-11-16 22:17:31] lu -> GetState
-[2025-11-16 22:17:35] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-16 22:17:35] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-16 22:17:59] Incoming connection from 127.0.0.1:62528
-[2025-11-16 22:18:21] Incoming connection from 127.0.0.1:62537
-[2025-11-16 22:18:21] Failed to read from connection while waiting for opponent: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-16 22:18:43] Incoming connection from 127.0.0.1:62538
-[2025-11-16 22:19:11] Incoming connection from 127.0.0.1:62541
-[2025-11-16 22:19:11] Failed to read from connection while waiting for opponent: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-16 22:19:31] Incoming connection from 127.0.0.1:62550
-[2025-11-16 22:19:31] Player B is now known as LUC
-[2025-11-16 22:19:31] LUC -> GetState
-[2025-11-16 22:19:31] Player A is now known as LU
-[2025-11-16 22:19:31] LU -> GetState
-[2025-11-16 22:19:41] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-16 22:19:41] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-16 22:23:25] Incoming connection from 127.0.0.1:62606
-[2025-11-16 22:23:36] Incoming connection from 127.0.0.1:62609
-[2025-11-16 22:23:36] Player B is now known as lucas
-[2025-11-16 22:23:36] lucas -> GetState
-[2025-11-16 22:23:36] Player A is now known as lu
-[2025-11-16 22:23:36] lu -> GetState
-[2025-11-16 22:23:38] lu -> PlaceBoat from (0, 0) to (0, 4)
-[2025-11-16 22:23:38] lu -> PlaceBoat from (0, 5) to (0, 8)
-[2025-11-16 22:23:39] lu -> PlaceBoat from (1, 1) to (1, 3)
-[2025-11-16 22:23:40] lu -> PlaceBoat from (1, 4) to (1, 6)
-[2025-11-16 22:23:41] lu -> PlaceBoat from (1, 7) to (1, 8)
-[2025-11-16 22:23:42] lu -> PlaceBoat from (2, 0) to (2, 1)
-[2025-11-16 22:23:43] lucas -> PlaceBoat from (0, 0) to (0, 4)
-[2025-11-16 22:23:44] lucas -> PlaceBoat from (0, 5) to (0, 8)
-[2025-11-16 22:23:45] lucas -> PlaceBoat from (1, 0) to (1, 2)
-[2025-11-16 22:23:45] lucas -> PlaceBoat from (1, 3) to (1, 5)
-[2025-11-16 22:23:46] lucas -> PlaceBoat from (1, 6) to (1, 7)
-[2025-11-16 22:23:46] lucas -> PlaceBoat from (1, 8) to (1, 9)
-[2025-11-16 22:23:48] lucas -> Hit at (0, 1)
-[2025-11-16 22:23:50] lu -> Hit at (0, 2)
-[2025-11-16 22:23:51] lucas -> Hit at (0, 0)
-[2025-11-16 22:23:53] lu -> Hit at (0, 1)
-[2025-11-16 22:23:55] lucas -> Hit at (0, 2)
-[2025-11-16 22:23:56] lu -> Hit at (0, 3)
-[2025-11-16 22:24:00] lucas -> Hit at (0, 3)
-[2025-11-16 22:24:01] lu -> Hit at (0, 4)
-[2025-11-16 22:24:03] lucas -> Hit at (0, 4)
-[2025-11-16 22:24:04] lu -> Hit at (0, 5)
-[2025-11-16 22:24:05] lucas -> Hit at (0, 5)
-[2025-11-16 22:24:06] lu -> Hit at (0, 6)
-[2025-11-16 22:24:08] lucas -> Hit at (0, 6)
-[2025-11-16 22:24:09] lu -> Hit at (0, 7)
-[2025-11-16 22:24:10] lucas -> Hit at (0, 7)
-[2025-11-16 22:24:11] lu -> Hit at (0, 8)
-[2025-11-16 22:24:12] lucas -> Hit at (0, 8)
-[2025-11-16 22:24:14] lu -> Hit at (0, 9)
-[2025-11-16 22:24:18] lucas -> Hit at (1, 0)
-[2025-11-16 22:24:20] lu -> Hit at (0, 0)
-[2025-11-16 22:24:23] lucas -> Hit at (1, 1)
-[2025-11-16 22:24:24] lu -> Hit at (1, 1)
-[2025-11-16 22:24:27] lucas -> Hit at (1, 2)
-[2025-11-16 22:24:28] lu -> Hit at (1, 0)
-[2025-11-16 22:24:30] lucas -> Hit at (1, 3)
-[2025-11-16 22:24:32] lu -> Hit at (1, 2)
-[2025-11-16 22:24:33] lucas -> Hit at (1, 4)
-[2025-11-16 22:24:34] lu -> Hit at (1, 3)
-[2025-11-16 22:24:35] lucas -> Hit at (1, 5)
-[2025-11-16 22:24:37] lu -> Hit at (1, 5)
-[2025-11-16 22:24:38] lucas -> Hit at (1, 6)
-[2025-11-16 22:24:39] lu -> Hit at (1, 6)
-[2025-11-16 22:24:41] lucas -> Hit at (1, 7)
-[2025-11-16 22:24:42] lu -> Hit at (1, 8)
-[2025-11-16 22:24:45] lucas -> Hit at (1, 8)
-[2025-11-16 22:24:47] lu -> Hit at (1, 9)
-[2025-11-16 22:24:49] lucas -> Hit at (2, 0)
-[2025-11-16 22:24:50] lu -> Hit at (1, 4)
-[2025-11-16 22:25:00] lucas -> Hit at (2, 1)
-[2025-11-16 22:25:00] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-16 22:27:56] Incoming connection from 127.0.0.1:62653
-=======
-[2025-11-16 17:46:42] Logger initialized
-[2025-11-16 17:46:42] Accepting connections at 127.0.0.1:1234
-[2025-11-16 17:47:37] Incoming connection from 127.0.0.1:53239
-[2025-11-16 17:52:24] Incoming connection from 127.0.0.1:53283
-[2025-11-16 17:52:24] Failed to read from connection while waiting for opponent: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-16 17:52:38] Incoming connection from 127.0.0.1:53285
-[2025-11-16 17:52:38] Player A is now known as ce
-[2025-11-16 17:52:38] Player B is now known as mar
-[2025-11-16 17:52:38] ce -> GetState
-[2025-11-16 17:52:38] mar -> GetState
-[2025-11-16 17:52:58] mar -> PlaceBoat from (3, 4) to (3, 8)
-[2025-11-16 17:52:59] mar -> PlaceBoat from (7, 1) to (7, 4)
-[2025-11-16 17:53:00] mar -> PlaceBoat from (2, 0) to (2, 2)
-[2025-11-16 17:53:00] mar -> PlaceBoat from (6, 6) to (6, 8)
-[2025-11-16 17:53:01] mar -> PlaceBoat from (1, 6) to (1, 7)
-[2025-11-16 17:53:01] mar -> PlaceBoat from (9, 8) to (9, 9)
-[2025-11-16 17:53:02] ce -> PlaceBoat from (3, 1) to (3, 5)
-[2025-11-16 17:53:03] ce -> PlaceBoat from (0, 6) to (0, 9)
-[2025-11-16 17:53:04] ce -> PlaceBoat from (8, 7) to (8, 9)
-[2025-11-16 17:53:04] ce -> PlaceBoat from (6, 1) to (6, 3)
-[2025-11-16 17:53:04] ce -> PlaceBoat from (5, 5) to (5, 6)
-[2025-11-16 17:53:05] ce -> PlaceBoat from (4, 7) to (4, 8)
-[2025-11-16 17:53:21] mar -> Hit at (2, 3)
-[2025-11-16 17:53:24] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-16 17:53:24] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-16 17:57:47] Incoming connection from 127.0.0.1:53351
-[2025-11-16 18:08:05] Incoming connection from 127.0.0.1:53588
-[2025-11-16 18:08:05] Failed to read from connection while waiting for opponent: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-16 18:09:36] Incoming connection from 127.0.0.1:53615
-[2025-11-16 18:09:36] Failed to read from connection while waiting for opponent: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-16 18:10:39] Incoming connection from 127.0.0.1:53623
-[2025-11-16 18:12:25] Incoming connection from 127.0.0.1:53635
-[2025-11-16 18:28:05] Incoming connection from 127.0.0.1:53817
-[2025-11-16 18:40:21] Incoming connection from 127.0.0.1:63253
-[2025-11-16 18:46:54] Incoming connection from 127.0.0.1:63309
-[2025-11-16 18:46:54] Failed to read from connection while waiting for opponent: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-16 18:48:25] Incoming connection from 127.0.0.1:63316
-[2025-11-16 18:48:25] Player A is now known as marc
-[2025-11-16 18:48:25] Player B is now known as mar
-[2025-11-16 18:48:25] marc -> GetState
-[2025-11-16 18:48:25] mar -> GetState
-[2025-11-16 18:48:59] Received boat placement with out-of-bounds coordinates (1, 6) -> (255, 255)
-[2025-11-16 18:48:59] Received boat placement with out-of-bounds coordinates (0, 6) -> (255, 255)
-[2025-11-16 18:49:00] Received boat placement with out-of-bounds coordinates (0, 7) -> (255, 255)
-[2025-11-16 18:49:17] Received boat placement with out-of-bounds coordinates (6, 6) -> (255, 255)
-[2025-11-16 18:49:17] mar -> PlaceBoat from (4, 2) to (4, 6)
-[2025-11-16 18:49:18] mar -> PlaceBoat from (2, 4) to (2, 7)
-[2025-11-16 18:49:19] mar -> PlaceBoat from (7, 3) to (7, 5)
-[2025-11-16 18:49:19] mar -> PlaceBoat from (3, 2) to (3, 4)
-[2025-11-16 18:49:20] mar -> PlaceBoat from (6, 5) to (6, 6)
-[2025-11-16 18:49:21] marc -> PlaceBoat from (4, 1) to (4, 5)
-[2025-11-16 18:49:21] marc -> PlaceBoat from (2, 3) to (2, 6)
-[2025-11-16 18:49:22] marc -> PlaceBoat from (5, 4) to (5, 6)
-[2025-11-16 18:49:22] marc -> PlaceBoat from (6, 4) to (6, 6)
-[2025-11-16 18:49:23] marc -> PlaceBoat from (7, 4) to (7, 5)
-[2025-11-16 18:49:24] marc -> PlaceBoat from (8, 4) to (8, 5)
-[2025-11-16 18:49:25] mar -> PlaceBoat from (5, 3) to (5, 4)
-[2025-11-16 18:49:35] mar -> Hit at (0, 0)
-[2025-11-16 18:49:38] marc -> Hit at (0, 0)
-[2025-11-16 18:49:39] marc -> Hit at (0, 1)
-[2025-11-16 18:49:40] marc -> Hit at (0, 1)
-[2025-11-16 18:49:40] marc -> Hit at (0, 1)
-[2025-11-16 18:49:43] mar -> Hit at (2, 3)
-[2025-11-16 18:49:48] marc -> Hit at (4, 2)
-[2025-11-16 18:49:51] mar -> Hit at (2, 4)
-[2025-11-16 18:49:53] marc -> Hit at (4, 3)
-[2025-11-16 18:49:54] mar -> Hit at (2, 5)
-[2025-11-16 18:49:56] marc -> Hit at (4, 4)
-[2025-11-16 18:49:59] mar -> Hit at (2, 6)
-[2025-11-16 18:50:37] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-16 18:50:37] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-16 18:53:26] Incoming connection from 127.0.0.1:63344
-[2025-11-16 19:29:03] Incoming connection from 127.0.0.1:63999
-[2025-11-16 19:29:03] Failed to read from connection while waiting for opponent: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-16 19:31:52] Incoming connection from 127.0.0.1:64043
-[2025-11-16 20:17:12] Incoming connection from 127.0.0.1:64888
-[2025-11-16 20:17:12] Failed to read from connection while waiting for opponent: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-16 20:17:37] Incoming connection from 127.0.0.1:64892
-[2025-11-16 20:17:37] Player B is now known as marce
-[2025-11-16 20:17:37] marce -> GetState
-[2025-11-16 20:17:37] Player A is now known as grama
-[2025-11-16 20:17:37] grama -> GetState
-[2025-11-16 20:18:15] marce -> PlaceBoat from (1, 3) to (1, 7)
-[2025-11-16 20:18:16] marce -> PlaceBoat from (2, 4) to (2, 7)
-[2025-11-16 20:18:16] marce -> PlaceBoat from (3, 4) to (3, 6)
-[2025-11-16 20:18:17] marce -> PlaceBoat from (4, 4) to (4, 6)
-[2025-11-16 20:18:17] marce -> PlaceBoat from (5, 4) to (5, 5)
-[2025-11-16 20:18:18] marce -> PlaceBoat from (6, 4) to (6, 5)
-[2025-11-16 20:18:21] grama -> PlaceBoat from (1, 3) to (1, 7)
-[2025-11-16 20:18:22] grama -> PlaceBoat from (2, 3) to (2, 6)
-[2025-11-16 20:18:22] grama -> PlaceBoat from (3, 3) to (3, 5)
-[2025-11-16 20:18:23] grama -> PlaceBoat from (4, 3) to (4, 5)
-[2025-11-16 20:18:23] grama -> PlaceBoat from (5, 3) to (5, 4)
-[2025-11-16 20:18:24] grama -> PlaceBoat from (6, 3) to (6, 4)
-[2025-11-16 20:18:31] marce -> Hit at (1, 3)
-[2025-11-16 20:18:33] grama -> Hit at (1, 3)
-[2025-11-16 20:18:39] marce -> Hit at (1, 2)
-[2025-11-16 20:18:41] grama -> Hit at (1, 2)
-[2025-11-16 20:18:42] marce -> Hit at (1, 4)
-[2025-11-16 20:18:44] grama -> Hit at (2, 4)
-[2025-11-16 20:18:48] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-16 20:18:48] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-17 00:13:15] Incoming connection from 127.0.0.1:56827
-[2025-11-17 00:13:47] Incoming connection from 127.0.0.1:56831
-[2025-11-17 00:13:47] Player A is now known as pelo
-[2025-11-17 00:13:47] Player B is now known as msrce
-[2025-11-17 00:13:47] pelo -> GetState
-[2025-11-17 00:13:47] msrce -> GetState
-[2025-11-17 00:13:57] msrce -> PlaceBoat from (3, 2) to (3, 6)
-[2025-11-17 00:13:57] msrce -> PlaceBoat from (4, 3) to (4, 6)
-[2025-11-17 00:13:58] msrce -> PlaceBoat from (5, 3) to (5, 5)
-[2025-11-17 00:13:58] msrce -> PlaceBoat from (6, 4) to (6, 6)
-[2025-11-17 00:13:59] msrce -> PlaceBoat from (7, 3) to (7, 4)
-[2025-11-17 00:13:59] msrce -> PlaceBoat from (8, 3) to (8, 4)
-[2025-11-17 00:14:00] pelo -> PlaceBoat from (1, 3) to (1, 7)
-[2025-11-17 00:14:01] pelo -> PlaceBoat from (3, 3) to (3, 6)
-[2025-11-17 00:14:01] pelo -> PlaceBoat from (4, 3) to (4, 5)
-[2025-11-17 00:14:02] pelo -> PlaceBoat from (6, 3) to (6, 5)
-[2025-11-17 00:14:02] pelo -> PlaceBoat from (5, 3) to (5, 4)
-[2025-11-17 00:14:03] pelo -> PlaceBoat from (7, 3) to (7, 4)
-[2025-11-17 00:14:07] msrce -> Hit at (0, 0)
-[2025-11-17 00:14:10] pelo -> Hit at (0, 0)
-[2025-11-17 00:14:11] pelo -> Hit at (1, 2)
-[2025-11-17 00:14:12] msrce -> Hit at (0, 1)
-[2025-11-17 00:14:14] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-17 00:14:14] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-17 00:40:01] Incoming connection from 127.0.0.1:59065
-[2025-11-17 00:40:22] Incoming connection from 127.0.0.1:59067
-[2025-11-17 00:40:22] Player B is now known as l
-[2025-11-17 00:40:22] l -> GetState
-[2025-11-17 00:40:22] Player A is now known as m
-[2025-11-17 00:40:22] m -> GetState
-[2025-11-17 00:41:09] m -> PlaceBoat from (0, 3) to (0, 7)
-[2025-11-17 00:41:09] m -> PlaceBoat from (1, 3) to (1, 6)
-[2025-11-17 00:41:10] m -> PlaceBoat from (2, 3) to (2, 5)
-[2025-11-17 00:41:10] m -> PlaceBoat from (3, 4) to (3, 6)
-[2025-11-17 00:41:11] m -> PlaceBoat from (4, 4) to (4, 5)
-[2025-11-17 00:41:12] m -> PlaceBoat from (5, 4) to (5, 5)
-[2025-11-17 00:41:20] l -> PlaceBoat from (0, 3) to (0, 7)
-[2025-11-17 00:41:21] l -> PlaceBoat from (1, 3) to (1, 6)
-[2025-11-17 00:41:22] l -> PlaceBoat from (2, 3) to (2, 5)
-[2025-11-17 00:41:23] l -> PlaceBoat from (3, 3) to (3, 5)
-[2025-11-17 00:41:24] l -> PlaceBoat from (4, 3) to (4, 4)
-[2025-11-17 00:41:25] l -> PlaceBoat from (5, 3) to (5, 4)
-[2025-11-17 00:42:03] m -> Hit at (0, 1)
-[2025-11-17 00:42:04] l -> Hit at (0, 1)
-[2025-11-17 00:42:06] m -> Hit at (1, 2)
-[2025-11-17 00:42:16] m -> Hit at (2, 3)
-[2025-11-17 00:42:17] m -> Hit at (1, 3)
-[2025-11-17 00:42:19] l -> Hit at (0, 2)
-[2025-11-17 00:42:22] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-17 00:42:22] Failed to read from tcp stream: failed to fill whole buffer
-[2025-11-17 00:45:12] Incoming connection from 127.0.0.1:59164
-[2025-11-17 00:45:34] Incoming connection from 127.0.0.1:59169
-[2025-11-17 00:45:34] Player A is now known as o
-[2025-11-17 00:45:34] Player B is now known as mra
-[2025-11-17 00:45:34] o -> GetState
-[2025-11-17 00:45:34] mra -> GetState
-[2025-11-17 00:45:42] Failed to read from tcp stream: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-17 00:45:42] Failed to notify A about opponent disconnect: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-17 00:45:42] Failed to read from tcp stream: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-17 00:48:07] Incoming connection from 127.0.0.1:59211
-[2025-11-17 00:48:14] Incoming connection from 127.0.0.1:59214
-[2025-11-17 00:48:14] Player B is now known as l
-[2025-11-17 00:48:14] l -> GetState
-[2025-11-17 00:48:14] Player A is now known as p
-[2025-11-17 00:48:14] p -> GetState
-[2025-11-17 00:48:19] l -> PlaceBoat from (0, 3) to (0, 7)
-[2025-11-17 00:48:20] l -> PlaceBoat from (1, 3) to (1, 6)
-[2025-11-17 00:48:20] l -> PlaceBoat from (2, 3) to (2, 5)
-[2025-11-17 00:48:20] l -> PlaceBoat from (3, 3) to (3, 5)
-[2025-11-17 00:48:21] l -> PlaceBoat from (4, 3) to (4, 4)
-[2025-11-17 00:48:22] l -> PlaceBoat from (5, 3) to (5, 4)
-[2025-11-17 00:48:24] p -> PlaceBoat from (1, 2) to (1, 6)
-[2025-11-17 00:48:24] p -> PlaceBoat from (2, 2) to (2, 5)
-[2025-11-17 00:48:24] p -> PlaceBoat from (3, 2) to (3, 4)
-[2025-11-17 00:48:25] p -> PlaceBoat from (4, 2) to (4, 4)
-[2025-11-17 00:48:25] p -> PlaceBoat from (5, 2) to (5, 3)
-[2025-11-17 00:48:26] p -> PlaceBoat from (6, 2) to (6, 3)
-[2025-11-17 00:48:31] l -> Hit at (0, 3)
-[2025-11-17 00:48:34] p -> Hit at (1, 3)
-[2025-11-17 00:48:35] l -> Hit at (1, 3)
-[2025-11-17 00:48:38] p -> Hit at (1, 2)
-[2025-11-17 00:48:39] l -> Hit at (1, 2)
-[2025-11-17 00:48:41] p -> Hit at (1, 4)
-[2025-11-17 00:48:42] l -> Hit at (1, 4)
-[2025-11-17 00:48:44] p -> Hit at (1, 5)
-[2025-11-17 00:48:45] l -> Hit at (1, 5)
-[2025-11-17 00:48:47] p -> Hit at (1, 6)
-[2025-11-17 00:48:51] l -> Hit at (1, 6)
-[2025-11-17 00:48:53] p -> Hit at (1, 7)
-[2025-11-17 00:48:58] l -> Hit at (2, 3)
-[2025-11-17 00:49:01] p -> Hit at (2, 2)
-[2025-11-17 00:49:03] l -> Hit at (2, 4)
-[2025-11-17 00:49:04] p -> Hit at (2, 1)
-[2025-11-17 00:49:05] l -> Hit at (2, 5)
-[2025-11-17 00:49:06] p -> Hit at (2, 3)
-[2025-11-17 00:49:08] l -> Hit at (2, 2)
-[2025-11-17 00:49:11] l -> Hit at (2, 8)
-[2025-11-17 00:49:24] l -> Hit at (3, 3)
-[2025-11-17 00:49:26] p -> Hit at (3, 3)
-[2025-11-17 00:49:28] l -> Hit at (3, 4)
-[2025-11-17 00:49:30] p -> Hit at (3, 2)
-[2025-11-17 00:49:44] l -> Hit at (5, 1)
-[2025-11-17 00:49:45] l -> Hit at (4, 2)
-[2025-11-17 00:49:46] p -> Hit at (6, 4)
-[2025-11-17 00:49:46] l -> Hit at (6, 3)
-[2025-11-17 00:49:48] Failed to read from tcp stream: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-17 00:49:48] Failed to read from tcp stream: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-17 00:52:32] Incoming connection from 127.0.0.1:59263
-[2025-11-17 00:58:15] Incoming connection from 127.0.0.1:59526
-[2025-11-17 00:58:15] Failed to read from connection while waiting for opponent: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-17 00:58:22] Incoming connection from 127.0.0.1:59527
-[2025-11-17 00:58:22] Player B is now known as oarta
-[2025-11-17 00:58:22] oarta -> GetState
-[2025-11-17 00:58:22] Player A is now known as eiwota
-[2025-11-17 00:58:22] eiwota -> GetState
-[2025-11-17 00:58:30] oarta -> PlaceBoat from (3, 3) to (7, 3)
-[2025-11-17 00:58:31] Received boat placement with out-of-bounds coordinates (2, 3) -> (255, 255)
-[2025-11-17 00:59:25] oarta -> PlaceBoat from (0, 4) to (0, 7)
-[2025-11-17 00:59:27] oarta -> PlaceBoat from (1, 4) to (1, 6)
-[2025-11-17 00:59:28] oarta -> PlaceBoat from (2, 4) to (2, 6)
-[2025-11-17 01:00:00] oarta -> PlaceBoat from (5, 7) to (6, 7)
-[2025-11-17 01:00:02] oarta -> PlaceBoat from (8, 0) to (9, 0)
-[2025-11-17 01:00:28] eiwota -> PlaceBoat from (2, 3) to (2, 7)
-[2025-11-17 01:00:28] eiwota -> PlaceBoat from (3, 3) to (3, 6)
-[2025-11-17 01:00:28] eiwota -> PlaceBoat from (4, 3) to (4, 5)
-[2025-11-17 01:00:29] eiwota -> PlaceBoat from (5, 3) to (5, 5)
-[2025-11-17 01:00:29] eiwota -> PlaceBoat from (6, 3) to (6, 4)
-[2025-11-17 01:00:30] eiwota -> PlaceBoat from (7, 3) to (7, 4)
-[2025-11-17 01:00:32] oarta -> Hit at (2, 2)
-[2025-11-17 01:00:33] eiwota -> Hit at (0, 1)
-[2025-11-17 01:00:34] eiwota -> Hit at (0, 0)
-[2025-11-17 01:00:52] Failed to read from tcp stream: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-17 01:00:52] Failed to read from tcp stream: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
-[2025-11-17 08:20:20] Incoming connection from 127.0.0.1:56972
-[2025-11-17 08:20:32] Incoming connection from 127.0.0.1:56976
-[2025-11-17 08:20:32] Player B is now known as ll
-[2025-11-17 08:20:32] ll -> GetState
-[2025-11-17 08:20:32] Player A is now known as mm
-[2025-11-17 08:20:32] mm -> GetState
-[2025-11-17 08:20:56] ll -> PlaceBoat from (3, 0) to (7, 0)
-[2025-11-17 08:20:58] ll -> PlaceBoat from (3, 1) to (6, 1)
-[2025-11-17 08:20:58] ll -> PlaceBoat from (3, 2) to (5, 2)
-[2025-11-17 08:20:59] ll -> PlaceBoat from (3, 3) to (5, 3)
-[2025-11-17 08:20:59] ll -> PlaceBoat from (3, 4) to (4, 4)
-[2025-11-17 08:21:00] ll -> PlaceBoat from (3, 5) to (4, 5)
-[2025-11-17 08:21:12] mm -> PlaceBoat from (9, 5) to (9, 9)
-[2025-11-17 08:21:13] mm -> PlaceBoat from (8, 6) to (8, 9)
-[2025-11-17 08:21:13] mm -> PlaceBoat from (7, 7) to (7, 9)
-[2025-11-17 08:21:15] mm -> PlaceBoat from (6, 7) to (6, 9)
-[2025-11-17 08:21:15] mm -> PlaceBoat from (5, 7) to (5, 8)
-[2025-11-17 08:21:17] mm -> PlaceBoat from (4, 7) to (4, 8)
-[2025-11-17 08:21:22] ll -> Hit at (5, 9)
-[2025-11-17 08:21:27] ll -> Hit at (3, 0)
-[2025-11-17 08:21:28] ll -> Hit at (3, 0)
-[2025-11-17 08:21:30] mm -> Hit at (2, 0)
-[2025-11-17 08:21:35] mm -> Hit at (6, 9)
-[2025-11-17 08:21:37] ll -> Hit at (6, 9)
-[2025-11-17 08:21:39] mm -> Hit at (4, 1)
-[2025-11-17 08:21:40] ll -> Hit at (7, 9)
-[2025-11-17 08:21:42] mm -> Hit at (4, 2)
-[2025-11-17 08:21:44] ll -> Hit at (8, 9)
-[2025-11-17 08:21:48] mm -> Hit at (3, 2)
-[2025-11-17 08:21:50] ll -> Hit at (9, 9)
-[2025-11-17 08:21:57] mm -> Hit at (3, 1)
-[2025-11-17 08:22:05] ll -> Hit at (6, 8)
-[2025-11-17 08:22:08] mm -> Hit at (3, 0)
-[2025-11-17 08:22:10] ll -> Hit at (7, 8)
-[2025-11-17 08:22:11] mm -> Hit at (4, 0)
-[2025-11-17 08:22:13] ll -> Hit at (8, 8)
-[2025-11-17 08:22:17] mm -> Hit at (5, 0)
-[2025-11-17 08:22:18] ll -> Hit at (9, 8)
-[2025-11-17 08:22:21] mm -> Hit at (5, 1)
-[2025-11-17 08:22:23] ll -> Hit at (9, 7)
-[2025-11-17 08:22:26] mm -> Hit at (5, 2)
-[2025-11-17 08:22:27] ll -> Hit at (9, 6)
-[2025-11-17 08:22:30] mm -> Hit at (6, 0)
-[2025-11-17 08:22:32] ll -> Hit at (8, 7)
-[2025-11-17 08:22:37] mm -> Hit at (3, 3)
-[2025-11-17 08:22:41] ll -> Hit at (5, 8)
-[2025-11-17 08:22:44] mm -> Hit at (3, 4)
-[2025-11-17 08:22:46] ll -> Hit at (5, 7)
-[2025-11-17 08:22:52] mm -> Hit at (4, 4)
-[2025-11-17 08:22:57] ll -> Hit at (4, 8)
-[2025-11-17 08:23:00] mm -> Hit at (3, 5)
-[2025-11-17 08:23:06] ll -> Hit at (4, 7)
-[2025-11-17 08:23:11] mm -> Hit at (4, 5)
-[2025-11-17 08:23:19] ll -> Hit at (6, 7)
-[2025-11-17 08:23:23] mm -> Hit at (4, 3)
-[2025-11-17 08:23:25] ll -> Hit at (7, 7)
-[2025-11-17 08:23:29] mm -> Hit at (5, 3)
-[2025-11-17 08:23:33] ll -> Hit at (8, 6)
-[2025-11-17 08:23:41] mm -> Hit at (7, 0)
-[2025-11-17 08:23:47] ll -> Hit at (9, 5)
-[2025-11-17 08:23:47] Failed to read from tcp stream: failed to fill whole buffer
->>>>>>> Stashed changes
+[2025-11-19 00:11:24] Logger initialized
+[2025-11-19 00:11:24] Accepting connections at 0.0.0.0:1234
+[2025-11-19 00:13:46] Incoming connection from 192.168.0.133:62139
+[2025-11-19 00:14:10] Incoming connection from 192.168.0.133:62150
+[2025-11-19 00:14:10] Player B is now known as marce
+[2025-11-19 00:14:10] Player A is now known as piky
+[2025-11-19 00:14:10] marce -> GetState
+[2025-11-19 00:14:10] piky -> GetState
+[2025-11-19 00:14:17] Failed to read from tcp stream: failed to fill whole buffer
+[2025-11-19 00:14:17] Failed to read from tcp stream: failed to fill whole buffer
+[2025-11-19 00:15:11] Incoming connection from 192.168.0.133:62165
+[2025-11-19 10:52:20] Incoming connection from 127.0.0.1:57505
+[2025-11-19 10:52:20] Failed to read from connection while waiting for opponent: Se ha forzado la interrupción de una conexión existente por el host remoto. (os error 10054)
+[2025-11-19 10:59:56] Incoming connection from 127.0.0.1:60855
+[2025-11-19 11:00:06] Incoming connection from 127.0.0.1:60857
+[2025-11-19 11:00:06] Player B is now known as marcelo
+[2025-11-19 11:00:06] marcelo -> GetState
+[2025-11-19 11:00:06] Player A is now known as piky
+[2025-11-19 11:00:06] piky -> GetState
+[2025-11-19 11:00:18] piky -> PlaceBoat from (5, 3) to (5, 7)
+[2025-11-19 11:00:20] piky -> PlaceBoat from (6, 3) to (9, 3)
+[2025-11-19 11:00:21] piky -> PlaceBoat from (6, 4) to (6, 6)
+[2025-11-19 11:00:23] piky -> PlaceBoat from (6, 7) to (8, 7)
+[2025-11-19 11:00:24] piky -> PlaceBoat from (7, 4) to (8, 4)
+[2025-11-19 11:00:27] piky -> PlaceBoat from (7, 5) to (7, 6)
+[2025-11-19 11:00:29] marcelo -> PlaceBoat from (0, 9) to (4, 9)
+[2025-11-19 11:00:30] marcelo -> PlaceBoat from (0, 8) to (3, 8)
+[2025-11-19 11:00:30] marcelo -> PlaceBoat from (0, 7) to (2, 7)
+[2025-11-19 11:00:31] marcelo -> PlaceBoat from (0, 6) to (2, 6)
+[2025-11-19 11:00:32] marcelo -> PlaceBoat from (0, 5) to (1, 5)
+[2025-11-19 11:00:33] marcelo -> PlaceBoat from (0, 4) to (1, 4)
+[2025-11-19 11:00:35] piky -> Hit at (6, 4)
+[2025-11-19 11:00:38] marcelo -> Hit at (0, 9)
+[2025-11-19 11:00:41] piky -> Hit at (0, 9)
+[2025-11-19 11:00:43] marcelo -> Hit at (1, 9)
+[2025-11-19 11:00:45] piky -> Hit at (1, 9)
+[2025-11-19 11:00:46] marcelo -> Hit at (2, 5)
+[2025-11-19 11:00:48] piky -> Hit at (2, 9)
+[2025-11-19 11:00:49] marcelo -> Hit at (7, 5)
+[2025-11-19 11:00:51] piky -> Hit at (3, 9)
+[2025-11-19 11:00:53] marcelo -> Hit at (7, 3)
+[2025-11-19 11:00:58] piky -> Hit at (4, 9)
+[2025-11-19 11:01:01] marcelo -> Hit at (6, 3)
+[2025-11-19 11:01:02] piky -> Hit at (0, 8)
+[2025-11-19 11:01:05] marcelo -> Hit at (6, 1)
+[2025-11-19 11:01:06] piky -> Hit at (1, 8)
+[2025-11-19 11:01:08] marcelo -> Hit at (6, 2)
+[2025-11-19 11:01:10] piky -> Hit at (2, 8)
+[2025-11-19 11:01:11] marcelo -> Hit at (5, 1)
+[2025-11-19 11:01:12] piky -> Hit at (3, 8)
+[2025-11-19 11:01:15] marcelo -> Hit at (5, 2)
+[2025-11-19 11:01:17] piky -> Hit at (0, 7)
+[2025-11-19 11:01:18] marcelo -> Hit at (4, 2)
+[2025-11-19 11:01:20] piky -> Hit at (1, 7)
+[2025-11-19 11:01:21] marcelo -> Hit at (3, 2)
+[2025-11-19 11:01:23] piky -> Hit at (2, 7)
+[2025-11-19 11:01:24] marcelo -> Hit at (5, 3)
+[2025-11-19 11:01:26] piky -> Hit at (0, 6)
+[2025-11-19 11:01:27] marcelo -> Hit at (4, 4)
+[2025-11-19 11:01:29] piky -> Hit at (1, 6)
+[2025-11-19 11:01:30] marcelo -> Hit at (6, 5)
+[2025-11-19 11:01:31] piky -> Hit at (2, 6)
+[2025-11-19 11:01:34] marcelo -> Hit at (4, 1)
+[2025-11-19 11:01:36] piky -> Hit at (0, 5)
+[2025-11-19 11:01:37] marcelo -> Hit at (5, 0)
+[2025-11-19 11:01:39] piky -> Hit at (1, 5)
+[2025-11-19 11:01:40] marcelo -> Hit at (4, 0)
+[2025-11-19 11:01:41] piky -> Hit at (0, 4)
+[2025-11-19 11:01:43] marcelo -> Hit at (3, 1)
+[2025-11-19 11:01:45] piky -> Hit at (1, 4)
+[2025-11-19 11:01:45] Failed to read from tcp stream: failed to fill whole buffer

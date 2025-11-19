@@ -83,7 +83,7 @@ z_index = 1
 position = Vector2(4, 4)
 
 [node name="Player1Effects" type="Node2D" parent="HFlowContainer/Player1Panel"]
-z_index = 4
+z_index = 100
 position = Vector2(4, 4)
 
 [node name="Player1Preview" type="Node2D" parent="HFlowContainer/Player1Panel"]
@@ -115,7 +115,7 @@ theme_override_constants/v_separation = 0
 columns = 10
 
 [node name="Player2Effects" type="Node2D" parent="HFlowContainer/Player2Panel"]
-z_index = 4
+z_index = 100
 position = Vector2(4, 4)
 
 [node name="StatusPanel" type="Panel" parent="."]

@@ -97,6 +97,8 @@ var opponent_display_name: String = ""
 var last_status_header: int = -1
 var last_status_is_player_turn: bool = false
 var interactions_enabled: bool = false
+var player_destroyed_ship_keys := {}
+
 
 func _input(event):
 	if not (event is InputEventKey):
@@ -295,6 +297,8 @@ func update_player_cell_from_value(row: int, col: int, value: int) -> void:
 			if pre_start_mode:
 				should_disable = false
 			set_player_cell_state(row, col, CellVisualState.BASE, should_disable)
+			
+	_process_destroyed_player_ships()
 
 func update_opponent_cell_from_value(row: int, col: int, value: int, disabled: bool) -> void:
 	opponent_raw_values[row][col] = value
@@ -890,6 +894,51 @@ func _process_destroyed_opponent_ships() -> void:
 			opponent_destroyed_ship_keys[ship_key] = true
 			_handle_opponent_ship_destroyed(coords)
 
+func _process_destroyed_player_ships() -> void:
+	if player_raw_values.is_empty():
+		return
+
+	var visited: Array = []
+	for _row in range(GRID_SIZE):
+		var visited_row: Array[bool] = []
+		for _col in range(GRID_SIZE):
+			visited_row.append(false)
+		visited.append(visited_row)
+
+	for row in range(GRID_SIZE):
+		for col in range(GRID_SIZE):
+			var visited_row: Array[bool] = visited[row] as Array[bool]
+			if visited_row[col]:
+				continue
+			var cell_value: int = player_raw_values[row][col]
+			if not _is_ship_value(cell_value):
+				continue
+
+			var ship_info: Dictionary = _collect_ship_from_raw(player_raw_values, visited, row, col)
+			if ship_info.is_empty():
+				continue
+
+			var coords: Array[Vector2i] = ship_info.get("coords", []) as Array[Vector2i]
+			if coords.is_empty():
+				continue
+
+			var all_hit := true
+			for coord in coords:
+				var pos: Vector2i = coord
+				if player_raw_values[pos.x][pos.y] != 2:
+					all_hit = false
+					break
+
+			if not all_hit:
+				continue
+
+			var ship_key := _ship_coords_key(coords)
+			if player_destroyed_ship_keys.has(ship_key):
+				continue
+
+			player_destroyed_ship_keys[ship_key] = true
+			_handle_player_ship_destroyed(coords)
+
 func _collect_ship_from_raw(raw_values: Array, visited: Array, start_row: int, start_col: int) -> Dictionary:
 	var stack: Array[Vector2i] = [Vector2i(start_row, start_col)]
 	var coords: Array[Vector2i] = []
@@ -943,6 +992,17 @@ func _handle_opponent_ship_destroyed(coords: Array) -> void:
 		var coord: Vector2i = ordered[i]
 		var delay := float(i) * HIT_ANIMATION_TILE_DELAY
 		_trigger_cell_explosion(coord.x, coord.y, opponent_effects_overlay, opponent_explosions, delay)
+
+func _handle_player_ship_destroyed(coords: Array) -> void:
+	var ordered := coords.duplicate()
+	ordered.sort_custom(Callable(self, "_compare_vector2i"))
+
+	for i in range(ordered.size()):
+		var coord: Vector2i = ordered[i]
+		var delay := float(i) * HIT_ANIMATION_TILE_DELAY
+		_clear_cell_explosion(coord.x, coord.y, player_explosions)
+		_trigger_cell_explosion(coord.x, coord.y, player_effects_overlay, player_explosions, delay)
+
 
 func _trigger_player_explosion(row: int, col: int) -> void:
 	_trigger_cell_explosion(row, col, player_effects_overlay, player_explosions)
@@ -1014,6 +1074,7 @@ func _clear_all_explosions(clear_player_layout: bool = true) -> void:
 	_clear_explosion_store(player_explosions)
 	_clear_explosion_store(opponent_explosions)
 	opponent_destroyed_ship_keys.clear()
+	player_destroyed_ship_keys.clear()
 	if clear_player_layout:
 		player_ship_layout.clear()
 
