@@ -1,0 +1,182 @@
+[gd_scene load_steps=6 format=3 uid="uid://bk11sf0nj8sgg"]
+
+[ext_resource type="Script" uid="uid://c5a2bjris1o38" path="res://scripts/connection_manager.gd" id="1_okguv"]
+[ext_resource type="Script" uid="uid://na6xxkfa0qcf" path="res://scripts/board.gd" id="2_3eqlr"]
+[ext_resource type="Texture2D" uid="uid://0rhnr022y0wb" path="res://assets/background.png" id="3_j15tx"]
+[ext_resource type="FontFile" uid="uid://br4r3b7s1x2km" path="res://assets/fonts/Gimme Danger.ttf" id="4_ea46o"]
+
+[sub_resource type="StyleBoxFlat" id="1"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="Board" type="Control"]
+custom_minimum_size = Vector2(1280, 1024)
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 1
+script = ExtResource("1_okguv")
+
+[node name="Background" type="TextureRect" parent="."]
+texture_repeat = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_j15tx")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="HFlowContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 116.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 32
+alignment = 1
+script = ExtResource("2_3eqlr")
+
+[node name="Player1Panel" type="Panel" parent="HFlowContainer"]
+custom_minimum_size = Vector2(608, 608)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("1")
+
+[node name="Player1Board" type="GridContainer" parent="HFlowContainer/Player1Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
+columns = 10
+
+[node name="Player1Overlay" type="Node2D" parent="HFlowContainer/Player1Panel"]
+z_index = 1
+position = Vector2(4, 4)
+
+[node name="Player1Effects" type="Node2D" parent="HFlowContainer/Player1Panel"]
+z_index = 100
+position = Vector2(4, 4)
+
+[node name="Player1Preview" type="Node2D" parent="HFlowContainer/Player1Panel"]
+z_index = 2
+position = Vector2(4, 4)
+
+[node name="Player2Panel" type="Panel" parent="HFlowContainer"]
+custom_minimum_size = Vector2(608, 608)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("1")
+
+[node name="Player2Board" type="GridContainer" parent="HFlowContainer/Player2Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
+columns = 10
+
+[node name="Player2Effects" type="Node2D" parent="HFlowContainer/Player2Panel"]
+z_index = 100
+position = Vector2(4, 4)
+
+[node name="StatusPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = -52.0
+offset_top = 60.0
+offset_right = 44.0
+offset_bottom = 346.0
+grow_horizontal = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="StatusPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -1.0
+offset_top = 6.0
+offset_right = -1.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="VBoxContainer" type="VBoxContainer" parent="StatusPanel/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="PlayerNameLabel" type="Label" parent="StatusPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("4_ea46o")
+text = "Jugador:    Vos"
+horizontal_alignment = 1
+
+[node name="OpponentNameLabel" type="Label" parent="StatusPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("4_ea46o")
+text = "Oponente:    ESPERANDO"
+horizontal_alignment = 1
+
+[node name="PhaseLabel" type="Label" parent="StatusPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("4_ea46o")
+text = "Preparando partida..."
+horizontal_alignment = 1
+
+[node name="TurnLabel" type="Label" parent="StatusPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+
+[node name="PlacementContainer" type="HBoxContainer" parent="StatusPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+alignment = 1

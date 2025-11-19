@@ -1,0 +1,61 @@
+[gd_scene load_steps=4 format=3 uid="uid://c87sp1wfbfcpr"]
+
+[ext_resource type="Texture2D" uid="uid://cj8xe3la1fpsm" path="res://assets/quemado.png" id="1"]
+[ext_resource type="Script" path="res://scripts/lost.gd" id="2"]
+[ext_resource type="FontFile" uid="uid://br4r3b7s1x2km" path="res://assets/fonts/Gimme Danger.ttf" id="3_of5d2"]
+
+[node name="LostScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource("1")
+stretch_mode = 2
+
+[node name="Panel" type="VBoxContainer" parent="."]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.2
+anchor_right = 0.5
+anchor_bottom = 0.2
+offset_left = -350.0
+offset_right = 350.0
+offset_bottom = 350.0
+theme_override_constants/separation = 40
+
+[node name="TitleLabel" type="Label" parent="Panel"]
+modulate = Color(1, 0.8, 0.8, 1)
+layout_mode = 2
+theme_override_font_sizes/font_size = 65
+text = "DERROTA NAVAL"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Panel"]
+modulate = Color(0.95, 0.9, 0.9, 1)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_of5d2")
+theme_override_font_sizes/font_size = 23
+text = "Tu flota ha sido destruida..."
+horizontal_alignment = 1
+
+[node name="RetryButton" type="Button" parent="Panel"]
+custom_minimum_size = Vector2(320, 70)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_of5d2")
+text = "Intentar de nuevo"
+
+[node name="ExitButton" type="Button" parent="Panel"]
+custom_minimum_size = Vector2(320, 70)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_of5d2")
+text = "Salir"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
