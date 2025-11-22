@@ -13,6 +13,10 @@ extends Node
 @onready var player_name_label: Label = status_panel.get_node("MarginContainer/VBoxContainer/PlayerNameLabel")
 @onready var opponent_name_label: Label = status_panel.get_node("MarginContainer/VBoxContainer/OpponentNameLabel")
 
+@onready var sfx_hit: AudioStreamPlayer = $SFX_Hit
+@onready var sfx_miss: AudioStreamPlayer = $SFX_Miss
+
+
 const GRID_SIZE := 10
 const CELL_PIXEL_SIZE := 60
 const TILE_ATLAS := preload("res://assets/cells.png")
@@ -317,10 +321,16 @@ func set_player_cell_state(row: int, col: int, state: int, disabled_override: Va
 	if disabled_override != null:
 		disabled_state = disabled_override
 	_apply_style(button, state, disabled_state, true)
+	
 	if state == CellVisualState.HIT:
+		play_hit_sound()
 		_trigger_player_explosion(row, col)
+	elif state == CellVisualState.MISS:
+		play_miss_sound()
+		_clear_cell_explosion(row, col, player_explosions)
 	else:
 		_clear_cell_explosion(row, col, player_explosions)
+
 	if state == CellVisualState.BASE and not disabled_state and highlighted_cells.has(Vector2i(row, col)):
 		_apply_hover_override(button)
 
@@ -1130,3 +1140,11 @@ func _apply_style(button: Button, state: int, disabled: bool, allow_hover: bool)
 	else:
 		# En cualquier otro caso, hover igual al estilo normal (no se “ilumina”)
 		button.add_theme_stylebox_override("hover", style)
+
+func play_hit_sound():
+	if sfx_hit:
+		sfx_hit.play()
+
+func play_miss_sound():
+	if sfx_miss:
+		sfx_miss.play()
