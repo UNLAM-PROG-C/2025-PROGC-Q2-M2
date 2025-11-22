@@ -321,7 +321,7 @@ func set_player_cell_state(row: int, col: int, state: int, disabled_override: Va
 	if disabled_override != null:
 		disabled_state = disabled_override
 	_apply_style(button, state, disabled_state, true)
-	
+
 	if state == CellVisualState.HIT:
 		play_hit_sound()
 		_trigger_player_explosion(row, col)
@@ -338,6 +338,11 @@ func set_opponent_cell_state(row: int, col: int, state: int, disabled: bool) -> 
 	opponent_cell_states[row][col] = state
 	var button: Button = button_grid_player_2[row][col]
 	_apply_style(button, state, disabled, interactions_enabled)
+	if state == CellVisualState.HIT:
+		play_hit_sound()
+	elif state == CellVisualState.MISS:
+		play_miss_sound()
+
 
 func _refresh_opponent_styles() -> void:
 	for row_idx in range(GRID_SIZE):

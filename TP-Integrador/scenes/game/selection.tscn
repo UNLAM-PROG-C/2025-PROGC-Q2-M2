@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://dtgqj1wnggr4m" path="res://assets/ships_sheet_destroyed.png" id="4_x36m3"]
 [ext_resource type="FontFile" uid="uid://br4r3b7s1x2km" path="res://assets/fonts/Gimme Danger.ttf" id="5_v1g20"]
 
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1bvp3"]
 bg_color = Color(0.078431375, 0.10980392, 0.14117648, 1)
 border_width_left = 6
@@ -39,6 +40,7 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
+
 [node name="Main" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -47,6 +49,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_7jmw6")
+
 
 [node name="Background" type="TextureRect" parent="."]
 layout_mode = 1

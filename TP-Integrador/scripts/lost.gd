@@ -1,6 +1,7 @@
 extends Control
 
 func _ready():
+	$SFX_GAMEOVER.play()
 	# Conectar botones
 	$Panel/RetryButton.pressed.connect(_on_retry_pressed)
 	$Panel/ExitButton.pressed.connect(_on_exit_pressed)

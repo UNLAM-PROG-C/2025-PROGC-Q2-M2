@@ -18,6 +18,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 ConnectionState="*res://network/connection.gd"
+AudioController="*res://scenes/audio/audio_controller.tscn"
 
 [display]
 

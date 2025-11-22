@@ -1,0 +1,26 @@
+[gd_scene load_steps=6 format=3 uid="uid://dhqxctb7igckk"]
+
+[ext_resource type="AudioStream" uid="uid://dren7j2wqjh8i" path="res://assets/sfx/connect.mp3" id="1_jp5u2"]
+[ext_resource type="AudioStream" uid="uid://543pq6818ra" path="res://assets/sfx/disconect.mp3" id="2_m3w4v"]
+[ext_resource type="AudioStream" uid="uid://c0fraw517sqt0" path="res://assets/sfx/error.mp3" id="3_uttee"]
+[ext_resource type="AudioStream" uid="uid://ctmcosdqe3pms" path="res://assets/sfx/wait.mp3" id="4_hnuqx"]
+[ext_resource type="AudioStream" uid="uid://biqpb4hcsgkvn" path="res://assets/sfx/timeout.mp3" id="5_cpjqb"]
+[ext_resource type="Script" path="res://scripts/audio_controled.gd" id="10"]
+
+[node name="AudioController" type="Node"]
+script = ExtResource("10")
+
+[node name="SFX_Connect" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("1_jp5u2")
+
+[node name="SFX_Disconnect" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_m3w4v")
+
+[node name="SFX_Error" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_uttee")
+
+[node name="SFX_Waiting" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_hnuqx")
+
+[node name="SFX_Timeout" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_cpjqb")

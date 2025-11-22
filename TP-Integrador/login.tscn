@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=3 uid="uid://werrgkb5uwex"]
+[gd_scene load_steps=9 format=3 uid="uid://werrgkb5uwex"]
 
 [ext_resource type="Script" uid="uid://c0bolawr08484" path="res://scripts/login.gd" id="1_6hqeh"]
 [ext_resource type="Texture2D" uid="uid://dhniorm1mxvd1" path="res://assets/background_main.png" id="2_edd8a"]
 [ext_resource type="FontFile" uid="uid://br4r3b7s1x2km" path="res://assets/fonts/Gimme Danger.ttf" id="3_eqty5"]
 [ext_resource type="Script" uid="uid://c57v2o66y0r2i" path="res://scripts/background_layer.gd" id="4_ma4wh"]
 [ext_resource type="Texture2D" uid="uid://dtgqj1wnggr4m" path="res://assets/ships_sheet_destroyed.png" id="5_0s12h"]
+[ext_resource type="AudioStream" uid="uid://b8bi3tbfpmid" path="res://assets/sfx/intro.mp3" id="6_edd8a"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fu7sn"]
 bg_color = Color(0.49019608, 0.49019608, 0.49019608, 1)
@@ -111,3 +112,6 @@ scale = Vector2(0.7431347, 0.9553528)
 texture = ExtResource("5_0s12h")
 region_enabled = true
 region_rect = Rect2(131, 539, 232, 211)
+
+[node name="SFX_Intro" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("6_edd8a")

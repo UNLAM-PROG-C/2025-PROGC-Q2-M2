@@ -2,6 +2,7 @@ extends Control
 
 func _ready():
 	# Conectar botones
+	$SFX_WIN.play()
 	$Panel/RetryButton.pressed.connect(_on_retry_pressed)
 	$Panel/ExitButton.pressed.connect(_on_exit_pressed)
 

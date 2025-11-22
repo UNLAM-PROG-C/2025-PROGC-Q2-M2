@@ -4,6 +4,7 @@ extends Control
 @onready var name_input = $Panel/VBoxContainer/NameInput
 @onready var start_button = $Panel/VBoxContainer/StartButton
 @onready var error_label: Label = $Panel/VBoxContainer/ErrorLabel
+@onready var audio := AudioController
 
 # Amount of retries for connection
 var MAX_RETRIES = 30
@@ -73,6 +74,7 @@ func _on_start_button_pressed():
 
 	# Si hubo errores, los mostramos y salimos
 	if errores != "":
+		audio.play_error()
 		_show_error(errores.strip_edges())
 		start_button.disabled = false
 		return
@@ -101,8 +103,10 @@ func _on_start_button_pressed():
 	var err = await connect_to_host_and_check_success(ip, port, player_name)
 
 	if err == OK:
+		audio.play_connect()
 		get_tree().change_scene_to_file("res://scenes/game/board.tscn")
 	else:
+		audio.play_error()
 		ConnectionState.status = ConnectionState.ConnectionStatus.FAILED
 		print("Failed to connect: %s" % err)
 		_show_error("No se pudo conectar al servidor. Código de error: %s" % err)

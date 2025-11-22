@@ -3,6 +3,7 @@ extends Control
 @onready var play_button: Button = $VBoxContainer/PlayButton
 
 func _ready() -> void:
+	$SFX_Intro.play()
 	play_button.pressed.connect(_on_play_pressed)
 
 func _on_play_pressed() -> void:
