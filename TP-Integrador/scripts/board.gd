@@ -13,6 +13,7 @@ extends Node
 @onready var player_name_label: Label = status_panel.get_node("MarginContainer/VBoxContainer/PlayerNameLabel")
 @onready var opponent_name_label: Label = status_panel.get_node("MarginContainer/VBoxContainer/OpponentNameLabel")
 
+
 @onready var sfx_hit: AudioStreamPlayer = $SFX_Hit
 @onready var sfx_miss: AudioStreamPlayer = $SFX_Miss
 
@@ -338,10 +339,6 @@ func set_opponent_cell_state(row: int, col: int, state: int, disabled: bool) -> 
 	opponent_cell_states[row][col] = state
 	var button: Button = button_grid_player_2[row][col]
 	_apply_style(button, state, disabled, interactions_enabled)
-	if state == CellVisualState.HIT:
-		play_hit_sound()
-	elif state == CellVisualState.MISS:
-		play_miss_sound()
 
 
 func _refresh_opponent_styles() -> void:
