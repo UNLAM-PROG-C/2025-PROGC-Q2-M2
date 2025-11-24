@@ -316,6 +316,11 @@ func update_opponent_cell_from_value(row: int, col: int, value: int, disabled: b
 			set_opponent_cell_state(row, col, CellVisualState.BASE, disabled)
 
 func set_player_cell_state(row: int, col: int, state: int, disabled_override: Variant = null) -> void:
+	var previous_state = player_cell_states[row][col]
+
+	if previous_state == state:
+		return	
+
 	player_cell_states[row][col] = state
 	var button: Button = button_grid_player_1[row][col]
 	var disabled_state := button.disabled
