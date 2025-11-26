@@ -96,7 +96,7 @@ func _on_state_update(payload: PackedByteArray) -> void:
 
 func _handle_disconnection():
 	audio.play_disconnect()
-	_cleanup_and_change_scene("res://main.tscn")
+	_cleanup_and_change_scene("res://login.tscn")
 
 func _cleanup_and_change_scene(path: String):
 	ConnectionState.tcp = null
